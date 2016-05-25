@@ -21,7 +21,7 @@ import java.sql.SQLFeatureNotSupportedException;
 
 class CachedResultSetMetaData implements ResultSetMetaData {
 
-    private final ResultSetWriter.ColumnDef[] columns;
+    final ResultSetWriter.ColumnDef[] columns;
 
     CachedResultSetMetaData(ResultSetWriter.ColumnDef[] columns) {
         this.columns = columns;

@@ -19,10 +19,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.zip.GZIPOutputStream;
 
 class ResultSetWriter {
@@ -32,6 +31,7 @@ class ResultSetWriter {
             try (final GZIPOutputStream zoz = new GZIPOutputStream(fos)) {
                 try (ObjectOutputStream output = new ObjectOutputStream(zoz)) {
                     writeMetadata(output, resultSet.getMetaData());
+                    writeResultSet(output, resultSet);
                 }
             }
         } catch (IOException e) {
@@ -39,7 +39,7 @@ class ResultSetWriter {
         }
     }
 
-    private static void writeMetadata(final ObjectOutputStream output, ResultSetMetaData metadata)
+    private static void writeMetadata(final ObjectOutputStream output, final ResultSetMetaData metadata)
             throws IOException, SQLException {
         final int columnCount = metadata.getColumnCount();
         output.writeInt(columnCount);
@@ -123,4 +123,213 @@ class ResultSetWriter {
         }
     }
 
+    private static void writeResultSet(final ObjectOutputStream output, final ResultSet resultSet)
+            throws SQLException, IOException {
+        final ResultSetMetaData metaData = resultSet.getMetaData();
+        final int[] types = new int[metaData.getColumnCount()];
+        for (int i = 0; i < types.length; i++)
+            types[i] = metaData.getColumnType(i + 1);
+        int pos = 0;
+        while (resultSet.next()) {
+            output.writeInt(pos++);
+            int i = 0;
+            for (int type : types) {
+                i++;
+                switch (type) {
+                case Types.BIT:
+                case Types.BOOLEAN:
+                    writeBoolean(i, resultSet, output);
+                    break;
+                case Types.TINYINT:
+                    writeByte(i, resultSet, output);
+                    break;
+                case Types.SMALLINT:
+                    writeShort(i, resultSet, output);
+                    break;
+                case Types.INTEGER:
+                    writeInteger(i, resultSet, output);
+                    break;
+                case Types.BIGINT:
+                    writeLong(i, resultSet, output);
+                    break;
+                case Types.FLOAT:
+                    writeFloat(i, resultSet, output);
+                    break;
+                case Types.REAL:
+                    writeFloat(i, resultSet, output);
+                    break;
+                case Types.DOUBLE:
+                    writeDouble(i, resultSet, output);
+                    break;
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    writeBigDecimal(i, resultSet, output);
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                case Types.NCHAR:
+                case Types.NVARCHAR:
+                case Types.LONGNVARCHAR:
+                    writeString(i, resultSet, output);
+                    break;
+                case Types.DATE:
+                    writeDate(i, resultSet, output);
+                    break;
+                case Types.TIME:
+                case Types.TIME_WITH_TIMEZONE:
+                    writeTime(i, resultSet, output);
+                    break;
+                case Types.TIMESTAMP:
+                case Types.TIMESTAMP_WITH_TIMEZONE:
+                    writeTimestamp(i, resultSet, output);
+                    break;
+                case Types.ROWID:
+                    writeRowId(i, resultSet, output);
+                    break;
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                case Types.NULL:
+                case Types.OTHER:
+                case Types.JAVA_OBJECT:
+                case Types.DISTINCT:
+                case Types.STRUCT:
+                case Types.ARRAY:
+                case Types.BLOB:
+                case Types.CLOB:
+                case Types.REF:
+                case Types.DATALINK:
+                case Types.NCLOB:
+                case Types.SQLXML:
+                case Types.REF_CURSOR:
+                    writeNull(i, resultSet, output);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void writeBoolean(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final boolean val = resultSet.getBoolean(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeBoolean(val);
+    }
+
+    private static void writeByte(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final byte val = resultSet.getByte(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeByte(val);
+    }
+
+    private static void writeShort(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final short val = resultSet.getShort(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeShort(val);
+    }
+
+    private static void writeInteger(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final int val = resultSet.getInt(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeInt(val);
+    }
+
+    private static void writeLong(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final long val = resultSet.getLong(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeLong(val);
+    }
+
+    private static void writeFloat(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final float val = resultSet.getFloat(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeFloat(val);
+    }
+
+    private static void writeDouble(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final double val = resultSet.getDouble(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeDouble(val);
+    }
+
+    private static void writeString(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final String val = resultSet.getString(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeUTF(val);
+    }
+
+    private static void writeBigDecimal(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final BigDecimal val = resultSet.getBigDecimal(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (wasNull)
+            return;
+        output.writeObject(val);
+    }
+
+    private static void writeDate(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final Date val = resultSet.getDate(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeLong(val.getTime());
+    }
+
+    private static void writeTime(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final Time val = resultSet.getTime(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeLong(val.getTime());
+    }
+
+    private static void writeTimestamp(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final Timestamp val = resultSet.getTimestamp(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeLong(val.getTime());
+    }
+
+    private static void writeRowId(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws SQLException, IOException {
+        final RowId val = resultSet.getRowId(column);
+        final boolean wasNull = resultSet.wasNull();
+        output.writeBoolean(!wasNull);
+        if (!wasNull)
+            output.writeUTF(val.toString());
+    }
+
+    private static void writeNull(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+            throws IOException {
+        output.writeBoolean(false);
+    }
 }

@@ -49,7 +49,19 @@ class CachedResultSet implements ResultSet {
 
     @Override
     public boolean next() throws SQLException {
-        return false;
+
+        // First we check if we a the pos
+        try {
+            final int pos = input.readInt();
+            return true;
+        } catch (EOFException e) {
+            return false;
+        } catch (IOException e) {
+            throw new SQLException(e);
+        }
+
+        //Now we can get the columns
+        //TODO
     }
 
     @Override
