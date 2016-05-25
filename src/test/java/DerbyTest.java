@@ -61,7 +61,7 @@ import java.util.Properties;
 
     @Test
     public void test110TestSimpleStatement() throws SQLException {
-        final String sql = "SELECT * FROM FIRSTABLE";
+        final String sql = "SELECT * FROM FIRSTTABLE";
         // First the cache is written
         checkResultSet(cnx.createStatement().executeQuery(sql), 3);
         // Second the cache is read

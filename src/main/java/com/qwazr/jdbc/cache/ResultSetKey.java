@@ -15,15 +15,12 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 class ResultSetKey {
 
-    ResultSetKey(String sql) {
 
-    }
 
-    public Path getFileName() {
-        return null; // TODO
-    }
 }

@@ -55,11 +55,28 @@ class ResultSetWriter {
             output.writeUTF(metadata.getTableName(i));
             output.writeInt(metadata.getScale(i));
             output.writeUTF(metadata.getSchemaName(i));
+            output.writeBoolean(metadata.isAutoIncrement(i));
+            output.writeBoolean(metadata.isCaseSensitive(i));
+            output.writeBoolean(metadata.isCurrency(i));
+            output.writeBoolean(metadata.isDefinitelyWritable(i));
+            output.writeInt(metadata.isNullable(i));
+            output.writeBoolean(metadata.isReadOnly(i));
+            output.writeBoolean(metadata.isSearchable(i));
+            output.writeBoolean(metadata.isSigned(i));
+            output.writeBoolean(metadata.isWritable(i));
         }
 
     }
 
-    static class ColumnDef {
+    final static ColumnDef[] readColumns(final ObjectInputStream input) throws IOException {
+        final int columnCount = input.readInt();
+        final ColumnDef[] columns = new ColumnDef[columnCount];
+        for (int i = 0; i < columnCount; i++)
+            columns[i] = new ColumnDef(input);
+        return columns;
+    }
+
+    final static class ColumnDef {
 
         final String catalog;
         final String className;
@@ -70,9 +87,19 @@ class ResultSetWriter {
         final int displaySize;
         final int precision;
         final String tableName;
+        final int scale;
         final String schemaName;
+        final boolean isAutoIncrement;
+        final boolean isCaseSensitive;
+        final boolean isCurrency;
+        final boolean isDefinitelyWritable;
+        final int isNullable;
+        final boolean isReadOnly;
+        final boolean isSearchable;
+        final boolean isSigned;
+        final boolean isWritable;
 
-        ColumnDef(final ObjectInputStream input) throws IOException {
+        private ColumnDef(final ObjectInputStream input) throws IOException {
             catalog = input.readUTF();
             className = input.readUTF();
             label = input.readUTF();
@@ -82,7 +109,17 @@ class ResultSetWriter {
             displaySize = input.readInt();
             precision = input.readInt();
             tableName = input.readUTF();
+            scale = input.readInt();
             schemaName = input.readUTF();
+            isAutoIncrement = input.readBoolean();
+            isCaseSensitive = input.readBoolean();
+            isCurrency = input.readBoolean();
+            isDefinitelyWritable = input.readBoolean();
+            isNullable = input.readInt();
+            isReadOnly = input.readBoolean();
+            isSearchable = input.readBoolean();
+            isSigned = input.readBoolean();
+            isWritable = input.readBoolean();
         }
     }
 

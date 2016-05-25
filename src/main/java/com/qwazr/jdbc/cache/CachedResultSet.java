@@ -22,16 +22,28 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 class CachedResultSet implements ResultSet {
 
     private final ObjectInputStream input;
-    
+    private final CachedResultSetMetaData metaData;
+
     CachedResultSet(final Path resultSetPath) throws SQLException {
         try {
-            input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(resultSetPath.toFile())));
+            input = new ObjectInputStream(new GZIPInputStream(new FileInputStream(resultSetPath.toFile())));
         } catch (IOException e) {
             throw new SQLException("Error while opening the file " + resultSetPath, e);
+        }
+        try {
+            metaData = new CachedResultSetMetaData(ResultSetWriter.readColumns(input));
+        } catch (IOException e) {
+            try {
+                close();
+            } catch (Exception ex) {
+                //Close quietly
+            }
+            throw new SQLException("Cannot read the cache: " + resultSetPath, e);
         }
     }
 

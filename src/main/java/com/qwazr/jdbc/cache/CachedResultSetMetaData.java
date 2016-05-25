@@ -17,121 +17,134 @@ package com.qwazr.jdbc.cache;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 
 class CachedResultSetMetaData implements ResultSetMetaData {
 
+    private final ResultSetWriter.ColumnDef[] columns;
+
+    CachedResultSetMetaData(ResultSetWriter.ColumnDef[] columns) {
+        this.columns = columns;
+    }
+
     @Override
     public int getColumnCount() throws SQLException {
-        return 0;
+        return columns.length;
+    }
+
+    private ResultSetWriter.ColumnDef getColumns(final int column) throws SQLException {
+        if (column == 0 || column > columns.length)
+            throw new SQLException("Wrong column number: " + column);
+        return columns[column - 1];
     }
 
     @Override
     public boolean isAutoIncrement(int column) throws SQLException {
-        return false;
+        return getColumns(column).isAutoIncrement;
     }
 
     @Override
     public boolean isCaseSensitive(int column) throws SQLException {
-        return false;
+        return getColumns(column).isCaseSensitive;
     }
 
     @Override
     public boolean isSearchable(int column) throws SQLException {
-        return false;
+        return getColumns(column).isSearchable;
     }
 
     @Override
     public boolean isCurrency(int column) throws SQLException {
-        return false;
+        return getColumns(column).isCurrency;
     }
 
     @Override
     public int isNullable(int column) throws SQLException {
-        return 0;
+        return getColumns(column).isNullable;
     }
 
     @Override
     public boolean isSigned(int column) throws SQLException {
-        return false;
+        return getColumns(column).isSigned;
     }
 
     @Override
     public int getColumnDisplaySize(int column) throws SQLException {
-        return 0;
+        return getColumns(column).displaySize;
     }
 
     @Override
     public String getColumnLabel(int column) throws SQLException {
-        return null;
+        return getColumns(column).label;
     }
 
     @Override
     public String getColumnName(int column) throws SQLException {
-        return null;
+        return getColumns(column).name;
     }
 
     @Override
     public String getSchemaName(int column) throws SQLException {
-        return null;
+        return getColumns(column).schemaName;
     }
 
     @Override
     public int getPrecision(int column) throws SQLException {
-        return 0;
+        return getColumns(column).precision;
     }
 
     @Override
     public int getScale(int column) throws SQLException {
-        return 0;
+        return getColumns(column).scale;
     }
 
     @Override
     public String getTableName(int column) throws SQLException {
-        return null;
+        return getColumns(column).tableName;
     }
 
     @Override
     public String getCatalogName(int column) throws SQLException {
-        return null;
+        return getColumns(column).catalog;
     }
 
     @Override
     public int getColumnType(int column) throws SQLException {
-        return 0;
+        return getColumns(column).type;
     }
 
     @Override
     public String getColumnTypeName(int column) throws SQLException {
-        return null;
+        return getColumns(column).typeName;
     }
 
     @Override
     public boolean isReadOnly(int column) throws SQLException {
-        return false;
+        return getColumns(column).isReadOnly;
     }
 
     @Override
     public boolean isWritable(int column) throws SQLException {
-        return false;
+        return getColumns(column).isWritable;
     }
 
     @Override
     public boolean isDefinitelyWritable(int column) throws SQLException {
-        return false;
+        return getColumns(column).isDefinitelyWritable;
     }
 
     @Override
     public String getColumnClassName(int column) throws SQLException {
-        return null;
+        return getColumns(column).className;
     }
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
+        throw new SQLFeatureNotSupportedException();
     }
 }

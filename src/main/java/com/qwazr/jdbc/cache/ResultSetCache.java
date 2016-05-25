@@ -15,9 +15,12 @@
  */
 package com.qwazr.jdbc.cache;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -39,8 +42,8 @@ class ResultSetCache {
         this.cacheDirectory = cacheDirectory;
     }
 
-    CachedResultSet get(final ResultSetKey key, Provider resultSetProvider) throws SQLException {
-        final Path resultSetPath = cacheDirectory.resolve(key.getFileName());
+    CachedResultSet get(final String key, final Provider resultSetProvider) throws SQLException {
+        final Path resultSetPath = cacheDirectory.resolve(key);
         final ResultSet providedResultSet;
         if (!Files.exists(resultSetPath)) {
             providedResultSet = resultSetProvider.provide();
@@ -52,5 +55,18 @@ class ResultSetCache {
     interface Provider {
 
         ResultSet provide() throws SQLException;
+    }
+
+    private static String digest(final String src) throws SQLException {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            return DatatypeConverter.printHexBinary(md.digest(src.getBytes()));
+        } catch (NoSuchAlgorithmException e) {
+            throw new SQLException("MD5 is not available");
+        }
+    }
+
+    final static String getKey(final String sql) throws SQLException {
+        return digest(sql);
     }
 }
