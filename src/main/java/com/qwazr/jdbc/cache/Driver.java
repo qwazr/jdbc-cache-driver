@@ -28,6 +28,7 @@ class Driver implements java.sql.Driver {
 
     private final static String URL_PREFIX = "jdbc:cache:file:";
     private final static String CACHE_DRIVER_URL = "cache.driver.url";
+    private final static String CACHE_DRIVER_ACTIVE = "cache.driver.active";
 
     static {
         try {
@@ -41,13 +42,16 @@ class Driver implements java.sql.Driver {
 
         // Determine the optional backend connection
         final String cacheDriverUrl = info.getProperty(CACHE_DRIVER_URL);
+        final String cacheDriverActive = info.getProperty(CACHE_DRIVER_ACTIVE);
+        final boolean active = cacheDriverActive == null ? true : Boolean.parseBoolean(cacheDriverActive);
+
         final Connection backendConnection =
                 cacheDriverUrl == null ? null : DriverManager.getConnection(cacheDriverUrl, info);
 
         if (url.length() <= URL_PREFIX.length())
             throw new SQLException("The path is empty: " + url);
         final Path cacheDirectory = FileSystems.getDefault().getPath(url.substring(URL_PREFIX.length()));
-        return new CachedConnection(backendConnection, cacheDirectory);
+        return new CachedConnection(backendConnection, cacheDirectory, active);
     }
 
     public boolean acceptsURL(String url) throws SQLException {

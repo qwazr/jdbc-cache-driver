@@ -15,6 +15,7 @@
  */
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -27,22 +28,33 @@ import java.util.Properties;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) public class DerbyTest {
 
-    private static Connection cnx;
+    private static Connection cnxCacheDisable;
+    private static Connection cnxCacheEnable;
+    private static String jdbcCacheUrl;
 
-    @Test
-    public void test001initDriver() throws SQLException, IOException, ClassNotFoundException {
+    @BeforeClass
+    public static void init() throws ClassNotFoundException, IOException {
         Class.forName("com.qwazr.jdbc.cache.Driver");
         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         final Path tempDir = Files.createTempDirectory("jdbc-cache-test");
-        final String jdbcCacheUrl = "jdbc:cache:file:" + tempDir.toUri().getPath();
-        final Properties info = new Properties();
-        info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
-        cnx = DriverManager.getConnection(jdbcCacheUrl, info);
-        Assert.assertNotNull(cnx);
+        jdbcCacheUrl = "jdbc:cache:file:" + tempDir.toUri().getPath();
     }
 
-    private int update(String sql) throws SQLException {
-        return cnx.createStatement().executeUpdate(sql);
+    @Test
+    public void test001initConnectionWithoutCache() throws SQLException, IOException, ClassNotFoundException {
+        final Properties info = new Properties();
+        info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+        info.setProperty("cache.driver.active", "false");
+        cnxCacheDisable = DriverManager.getConnection(jdbcCacheUrl, info);
+        Assert.assertNotNull(cnxCacheDisable);
+    }
+
+    @Test
+    public void test002initConnectionWithCache() throws SQLException, IOException, ClassNotFoundException {
+        final Properties info = new Properties();
+        info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+        cnxCacheEnable = DriverManager.getConnection(jdbcCacheUrl, info);
+        Assert.assertNotNull(cnxCacheEnable);
     }
 
     private final static Object[] ROW1 = { 10, "TEN", null };
@@ -55,8 +67,9 @@ import java.util.Properties;
 
     @Test
     public void test100createTableAndDataSet() throws SQLException {
-        update("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)");
-        final PreparedStatement stmt = cnx.prepareStatement("INSERT INTO FIRSTTABLE VALUES (?,?,?)");
+        cnxCacheDisable.createStatement()
+                .executeUpdate("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)");
+        final PreparedStatement stmt = cnxCacheDisable.prepareStatement("INSERT INTO FIRSTTABLE VALUES (?,?,?)");
         for (Object[] row : ROWS) {
             stmt.setInt(1, (Integer) row[0]);
             stmt.setString(2, (String) row[1]);
@@ -66,36 +79,48 @@ import java.util.Properties;
         }
     }
 
-    private void checkResultSet(ResultSet resultSet, int expectedCount) throws SQLException {
+    private void checkResultSet(ResultSet resultSet, Object[]... rows) throws SQLException {
         Assert.assertNotNull("The resultSet is null", resultSet);
         int count = 0;
         while (resultSet.next()) {
-            Assert.assertEquals(ROWS[count][0], resultSet.getInt(1));
-            Assert.assertEquals(ROWS[count][1], resultSet.getString(2));
-            Assert.assertEquals(ROWS[count][2], resultSet.getTimestamp(3));
+            Assert.assertEquals(rows[count][0], resultSet.getInt(1));
+            Assert.assertEquals(rows[count][1], resultSet.getString(2));
+            Assert.assertEquals(rows[count][2], resultSet.getTimestamp(3));
             count++;
         }
-        Assert.assertEquals(expectedCount, count);
+        Assert.assertEquals(rows.length, count);
     }
 
     @Test
     public void test110TestSimpleStatement() throws SQLException {
         final String sql = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
-        // First the cache is written
-        checkResultSet(cnx.createStatement().executeQuery(sql), ROWS.length);
-        // Second the cache is read
-        checkResultSet(cnx.createStatement().executeQuery(sql), ROWS.length);
+        // First without the cache
+        checkResultSet(cnxCacheDisable.createStatement().executeQuery(sql), ROWS);
+        // Second the cache is written
+        checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
+        // Third the cache is read
+        checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
+    }
+
+    private final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
+
+    @Test
+    public void test110TestPreparedStatementWithoutCache() throws SQLException {
+        final PreparedStatement stmt = cnxCacheDisable.prepareStatement(SQL_PREP);
+        stmt.setInt(1, 10);
+        stmt.setInt(2, 40);
+        checkResultSet(stmt.executeQuery(), ROW1, ROW4);
     }
 
     @Test
-    public void test110TestPreparedStatement() throws SQLException {
-        final String sql = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ?";
-        final PreparedStatement stmt = cnx.prepareStatement(sql);
+    public void test120TestPreparedStatementWithCache() throws SQLException {
+        final PreparedStatement stmt = cnxCacheEnable.prepareStatement(SQL_PREP);
         stmt.setInt(1, 10);
+        stmt.setInt(2, 40);
         // First the cache is written
-        checkResultSet(stmt.executeQuery(), 1);
+        checkResultSet(stmt.executeQuery(), ROW1, ROW4);
         // Second the cache is read
-        checkResultSet(stmt.executeQuery(), 1);
+        checkResultSet(stmt.executeQuery(), ROW1, ROW4);
     }
 
 }
