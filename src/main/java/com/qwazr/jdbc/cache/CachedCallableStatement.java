@@ -19,15 +19,20 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
 class CachedCallableStatement extends CachedPreparedStatement<CallableStatement> implements CallableStatement {
 
-    CachedCallableStatement(final Path cacheDirectory, final CallableStatement statement, final String sql) {
-        super(cacheDirectory, statement, sql);
+    CachedCallableStatement(final CachedConnection connection, final CallableStatement backendStatement,
+            final String sql, final int resultSetConcurrency, final int resultSetType, final int resultSetHoldability) {
+        super(connection, backendStatement, sql, resultSetConcurrency, resultSetType, resultSetHoldability);
+    }
+
+    CachedCallableStatement(final CachedConnection connection, final CallableStatement backendStatement,
+            final String sql) {
+        this(connection, backendStatement, sql, 0, 0, 0);
     }
 
     @Override

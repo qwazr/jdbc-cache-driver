@@ -54,9 +54,14 @@ class CachedStatement<T extends Statement> implements Statement {
         this.closeOnCompletion = false;
     }
 
+    CachedStatement(final CachedConnection connection, final T backendStatement) {
+        this(connection, backendStatement, 0, 0, 0);
+    }
+
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return resultSet = new CachedResultSet(this, sql);
+        final ResultSetKey resultSetKey = new ResultSetKey(sql);
+        return connection.resultSetCache.get(resultSetKey, () -> backendStatement.executeQuery(sql));
     }
 
     @Override

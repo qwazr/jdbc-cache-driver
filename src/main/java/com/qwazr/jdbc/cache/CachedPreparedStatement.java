@@ -19,14 +19,26 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.Map;
+import java.util.HashMap;
 
 class CachedPreparedStatement<T extends PreparedStatement> extends CachedStatement<T> implements PreparedStatement {
 
-    CachedPreparedStatement(final Path cacheDirectory, final T statement, final String sql) {
-        super(cacheDirectory, statement);
+    protected final String sql;
+
+    private final Map<Integer, Object> parameters;
+
+    CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql,
+            final int resultSetConcurrency, final int resultSetType, final int resultSetHoldability) {
+        super(connection, backendStatement, resultSetConcurrency, resultSetType, resultSetHoldability);
+        this.sql = sql;
+        this.parameters = new HashMap<>();
+    }
+
+    CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql) {
+        this(connection, backendStatement, sql, 0, 0, 0);
     }
 
     @Override
