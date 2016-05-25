@@ -61,7 +61,7 @@ class CachedStatement<T extends Statement> implements Statement {
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
         final String cacheKey = ResultSetCache.getKey(sql);
-        return connection.resultSetCache.get(cacheKey, () -> backendStatement.executeQuery(sql));
+        return connection.resultSetCache.get(this, cacheKey, () -> backendStatement.executeQuery(sql));
     }
 
     @Override

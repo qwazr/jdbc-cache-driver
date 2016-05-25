@@ -45,34 +45,53 @@ import java.util.Properties;
         return cnx.createStatement().executeUpdate(sql);
     }
 
+    private final static Object[] ROW1 = { 10, "TEN", null };
+    private final static Object[] ROW2 = { 20, "TWENTY", null };
+    private final static Object[] ROW3 = { 30, "THIRTY", null };
+    private final static Object[] ROW4 = { 40, null, null };
+    private final static Object[] ROW5 = { 50, null, null };
+
+    private final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
+
+    @Test
+    public void test100createTableAndDataSet() throws SQLException {
+        update("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)");
+        final PreparedStatement stmt = cnx.prepareStatement("INSERT INTO FIRSTTABLE VALUES (?,?,?)");
+        for (Object[] row : ROWS) {
+            stmt.setInt(1, (Integer) row[0]);
+            stmt.setString(2, (String) row[1]);
+            row[2] = new Timestamp(System.currentTimeMillis());
+            stmt.setTimestamp(3, (Timestamp) row[2]);
+            Assert.assertEquals(1, stmt.executeUpdate());
+        }
+    }
+
     private void checkResultSet(ResultSet resultSet, int expectedCount) throws SQLException {
         Assert.assertNotNull("The resultSet is null", resultSet);
         int count = 0;
-        while (resultSet.next())
+        while (resultSet.next()) {
+            Assert.assertEquals(ROWS[count][0], resultSet.getInt(1));
+            Assert.assertEquals(ROWS[count][1], resultSet.getString(2));
+            Assert.assertEquals(ROWS[count][2], resultSet.getTimestamp(3));
             count++;
+        }
         Assert.assertEquals(expectedCount, count);
     }
 
     @Test
-    public void test100createTableAndDataSet() throws SQLException {
-        update("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12))");
-        Assert.assertEquals(3, update("INSERT INTO FIRSTTABLE VALUES (10,'TEN'),(20,'TWENTY'),(30,'THIRTY')"));
-    }
-
-    @Test
     public void test110TestSimpleStatement() throws SQLException {
-        final String sql = "SELECT * FROM FIRSTTABLE";
+        final String sql = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
         // First the cache is written
-        checkResultSet(cnx.createStatement().executeQuery(sql), 3);
+        checkResultSet(cnx.createStatement().executeQuery(sql), ROWS.length);
         // Second the cache is read
-        checkResultSet(cnx.createStatement().executeQuery(sql), 3);
+        checkResultSet(cnx.createStatement().executeQuery(sql), ROWS.length);
     }
 
     @Test
     public void test110TestPreparedStatement() throws SQLException {
-        final String sql = "SELECT * FROM FIRSTTABLE WHERE ID = ?";
+        final String sql = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ?";
         final PreparedStatement stmt = cnx.prepareStatement(sql);
-        stmt.setInt(0, 10);
+        stmt.setInt(1, 10);
         // First the cache is written
         checkResultSet(stmt.executeQuery(), 1);
         // Second the cache is read

@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.SortedMap;
 
 class ResultSetCache {
 
@@ -42,14 +43,15 @@ class ResultSetCache {
         this.cacheDirectory = cacheDirectory;
     }
 
-    CachedResultSet get(final String key, final Provider resultSetProvider) throws SQLException {
+    CachedResultSet get(final CachedStatement statement, final String key, final Provider resultSetProvider)
+            throws SQLException {
         final Path resultSetPath = cacheDirectory.resolve(key);
         final ResultSet providedResultSet;
         if (!Files.exists(resultSetPath)) {
             providedResultSet = resultSetProvider.provide();
             ResultSetWriter.write(resultSetPath, providedResultSet);
         }
-        return new CachedResultSet(resultSetPath);
+        return new CachedResultSet(statement, resultSetPath);
     }
 
     interface Provider {
@@ -68,5 +70,15 @@ class ResultSetCache {
 
     final static String getKey(final String sql) throws SQLException {
         return digest(sql);
+    }
+
+    final static String getKey(final String sql, final SortedMap<Integer, Object> parameters) throws SQLException {
+        final StringBuilder sb = new StringBuilder(sql);
+        parameters.forEach((index, value) -> {
+            sb.append('•');
+            sb.append(index);
+            sb.append(value.toString());
+        });
+        return digest(sb.toString());
     }
 }

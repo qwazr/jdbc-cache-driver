@@ -15,10 +15,10 @@
  */
 package com.qwazr.jdbc.cache;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.*;
@@ -28,8 +28,8 @@ class ResultSetWriter {
 
     final static void write(final Path resultSetPath, final ResultSet resultSet) throws SQLException {
         try (final FileOutputStream fos = new FileOutputStream(resultSetPath.toFile())) {
-            try (final GZIPOutputStream zoz = new GZIPOutputStream(fos)) {
-                try (ObjectOutputStream output = new ObjectOutputStream(zoz)) {
+            try (final GZIPOutputStream zos = new GZIPOutputStream(fos)) {
+                try (final DataOutputStream output = new DataOutputStream(zos)) {
                     writeMetadata(output, resultSet.getMetaData());
                     writeResultSet(output, resultSet);
                 }
@@ -39,7 +39,7 @@ class ResultSetWriter {
         }
     }
 
-    private static void writeMetadata(final ObjectOutputStream output, final ResultSetMetaData metadata)
+    private static void writeMetadata(final DataOutputStream output, final ResultSetMetaData metadata)
             throws IOException, SQLException {
         final int columnCount = metadata.getColumnCount();
         output.writeInt(columnCount);
@@ -68,7 +68,7 @@ class ResultSetWriter {
 
     }
 
-    final static ColumnDef[] readColumns(final ObjectInputStream input) throws IOException {
+    final static ColumnDef[] readColumns(final DataInputStream input) throws IOException {
         final int columnCount = input.readInt();
         final ColumnDef[] columns = new ColumnDef[columnCount];
         for (int i = 0; i < columnCount; i++)
@@ -99,7 +99,7 @@ class ResultSetWriter {
         final boolean isSigned;
         final boolean isWritable;
 
-        private ColumnDef(final ObjectInputStream input) throws IOException {
+        private ColumnDef(final DataInputStream input) throws IOException {
             catalog = input.readUTF();
             className = input.readUTF();
             label = input.readUTF();
@@ -123,7 +123,7 @@ class ResultSetWriter {
         }
     }
 
-    private static void writeResultSet(final ObjectOutputStream output, final ResultSet resultSet)
+    private static void writeResultSet(final DataOutputStream output, final ResultSet resultSet)
             throws SQLException, IOException {
         final ResultSetMetaData metaData = resultSet.getMetaData();
         final int[] types = new int[metaData.getColumnCount()];
@@ -131,7 +131,7 @@ class ResultSetWriter {
             types[i] = metaData.getColumnType(i + 1);
         int pos = 0;
         while (resultSet.next()) {
-            output.writeInt(pos++);
+            output.writeInt(++pos);
             int i = 0;
             for (int type : types) {
                 i++;
@@ -153,8 +153,6 @@ class ResultSetWriter {
                     writeLong(i, resultSet, output);
                     break;
                 case Types.FLOAT:
-                    writeFloat(i, resultSet, output);
-                    break;
                 case Types.REAL:
                     writeFloat(i, resultSet, output);
                     break;
@@ -203,14 +201,14 @@ class ResultSetWriter {
                 case Types.NCLOB:
                 case Types.SQLXML:
                 case Types.REF_CURSOR:
-                    writeNull(i, resultSet, output);
+                    writeNull(output);
                     break;
                 }
             }
         }
     }
 
-    private static void writeBoolean(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeBoolean(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final boolean val = resultSet.getBoolean(column);
         final boolean wasNull = resultSet.wasNull();
@@ -219,7 +217,7 @@ class ResultSetWriter {
             output.writeBoolean(val);
     }
 
-    private static void writeByte(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeByte(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final byte val = resultSet.getByte(column);
         final boolean wasNull = resultSet.wasNull();
@@ -228,7 +226,7 @@ class ResultSetWriter {
             output.writeByte(val);
     }
 
-    private static void writeShort(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeShort(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final short val = resultSet.getShort(column);
         final boolean wasNull = resultSet.wasNull();
@@ -237,7 +235,7 @@ class ResultSetWriter {
             output.writeShort(val);
     }
 
-    private static void writeInteger(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeInteger(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final int val = resultSet.getInt(column);
         final boolean wasNull = resultSet.wasNull();
@@ -246,7 +244,7 @@ class ResultSetWriter {
             output.writeInt(val);
     }
 
-    private static void writeLong(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeLong(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final long val = resultSet.getLong(column);
         final boolean wasNull = resultSet.wasNull();
@@ -255,7 +253,7 @@ class ResultSetWriter {
             output.writeLong(val);
     }
 
-    private static void writeFloat(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeFloat(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final float val = resultSet.getFloat(column);
         final boolean wasNull = resultSet.wasNull();
@@ -264,7 +262,7 @@ class ResultSetWriter {
             output.writeFloat(val);
     }
 
-    private static void writeDouble(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeDouble(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final double val = resultSet.getDouble(column);
         final boolean wasNull = resultSet.wasNull();
@@ -273,7 +271,7 @@ class ResultSetWriter {
             output.writeDouble(val);
     }
 
-    private static void writeString(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeString(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final String val = resultSet.getString(column);
         final boolean wasNull = resultSet.wasNull();
@@ -282,17 +280,17 @@ class ResultSetWriter {
             output.writeUTF(val);
     }
 
-    private static void writeBigDecimal(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeBigDecimal(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final BigDecimal val = resultSet.getBigDecimal(column);
         final boolean wasNull = resultSet.wasNull();
         output.writeBoolean(!wasNull);
         if (wasNull)
             return;
-        output.writeObject(val);
+        output.writeDouble(val.doubleValue());
     }
 
-    private static void writeDate(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeDate(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final Date val = resultSet.getDate(column);
         final boolean wasNull = resultSet.wasNull();
@@ -301,7 +299,7 @@ class ResultSetWriter {
             output.writeLong(val.getTime());
     }
 
-    private static void writeTime(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeTime(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final Time val = resultSet.getTime(column);
         final boolean wasNull = resultSet.wasNull();
@@ -310,7 +308,7 @@ class ResultSetWriter {
             output.writeLong(val.getTime());
     }
 
-    private static void writeTimestamp(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeTimestamp(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final Timestamp val = resultSet.getTimestamp(column);
         final boolean wasNull = resultSet.wasNull();
@@ -319,7 +317,7 @@ class ResultSetWriter {
             output.writeLong(val.getTime());
     }
 
-    private static void writeRowId(final int column, final ResultSet resultSet, final ObjectOutputStream output)
+    private static void writeRowId(final int column, final ResultSet resultSet, final DataOutputStream output)
             throws SQLException, IOException {
         final RowId val = resultSet.getRowId(column);
         final boolean wasNull = resultSet.wasNull();
@@ -328,8 +326,68 @@ class ResultSetWriter {
             output.writeUTF(val.toString());
     }
 
-    private static void writeNull(final int column, final ResultSet resultSet, final ObjectOutputStream output)
-            throws IOException {
+    private static void writeNull(final DataOutputStream output) throws IOException {
         output.writeBoolean(false);
+    }
+
+    public static Object readRow(final int type, final DataInputStream input) throws IOException {
+        final boolean wasNull = !input.readBoolean();
+        if (wasNull)
+            return null;
+        switch (type) {
+        case Types.BIT:
+        case Types.BOOLEAN:
+            return input.readBoolean();
+        case Types.TINYINT:
+            return input.readByte();
+        case Types.SMALLINT:
+            return input.readShort();
+        case Types.INTEGER:
+            return input.readInt();
+        case Types.BIGINT:
+            return input.readLong();
+        case Types.FLOAT:
+        case Types.REAL:
+            return input.readFloat();
+        case Types.DOUBLE:
+        case Types.NUMERIC:
+        case Types.DECIMAL:
+            return input.readDouble();
+        case Types.CHAR:
+        case Types.VARCHAR:
+        case Types.LONGVARCHAR:
+        case Types.NCHAR:
+        case Types.NVARCHAR:
+        case Types.LONGNVARCHAR:
+            return input.readUTF();
+        case Types.DATE:
+            return new java.sql.Date(input.readLong());
+        case Types.TIME:
+        case Types.TIME_WITH_TIMEZONE:
+            return new java.sql.Time(input.readLong());
+        case Types.TIMESTAMP:
+        case Types.TIMESTAMP_WITH_TIMEZONE:
+            return new java.sql.Timestamp(input.readLong());
+        case Types.ROWID:
+            return input.readUTF();
+        case Types.BINARY:
+        case Types.VARBINARY:
+        case Types.LONGVARBINARY:
+        case Types.NULL:
+        case Types.OTHER:
+        case Types.JAVA_OBJECT:
+        case Types.DISTINCT:
+        case Types.STRUCT:
+        case Types.ARRAY:
+        case Types.BLOB:
+        case Types.CLOB:
+        case Types.REF:
+        case Types.DATALINK:
+        case Types.NCLOB:
+        case Types.SQLXML:
+        case Types.REF_CURSOR:
+        default:
+            throw new IOException("Column type no supported: " + type);
+        }
     }
 }
