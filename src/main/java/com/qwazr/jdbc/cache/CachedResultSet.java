@@ -15,22 +15,24 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
 class CachedResultSet implements ResultSet {
 
-    final ResultSetKey resultSetKey;
-    final ResultSet backendResultSet;
-
-    CachedResultSet(final ResultSetKey resultSetKey, final ResultSet backendResultSet) {
-        this.resultSetKey = resultSetKey;
-        this.backendResultSet = backendResultSet;
+    private final ObjectInputStream input;
+    
+    CachedResultSet(final Path resultSetPath) throws SQLException {
+        try {
+            input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(resultSetPath.toFile())));
+        } catch (IOException e) {
+            throw new SQLException("Error while opening the file " + resultSetPath, e);
+        }
     }
 
     @Override
@@ -40,7 +42,11 @@ class CachedResultSet implements ResultSet {
 
     @Override
     public void close() throws SQLException {
-
+        try {
+            input.close();
+        } catch (IOException e) {
+            throw new SQLException(e);
+        }
     }
 
     @Override

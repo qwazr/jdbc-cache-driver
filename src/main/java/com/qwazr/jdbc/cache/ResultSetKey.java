@@ -15,10 +15,15 @@
  */
 package com.qwazr.jdbc.cache;
 
+import java.nio.file.Path;
+
 class ResultSetKey {
 
     ResultSetKey(String sql) {
-        
+
     }
 
+    public Path getFileName() {
+        return null; // TODO
+    }
 }

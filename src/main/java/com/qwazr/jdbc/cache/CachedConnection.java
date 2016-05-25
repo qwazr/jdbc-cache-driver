@@ -15,6 +15,7 @@
  */
 package com.qwazr.jdbc.cache;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.Map;
@@ -36,7 +37,7 @@ class CachedConnection implements Connection {
     private final Connection connection;
     final ResultSetCache resultSetCache;
 
-    CachedConnection(final Connection backendConnection, final Path cacheDirectory) {
+    CachedConnection(final Connection backendConnection, final Path cacheDirectory) throws SQLException {
         this.connection = backendConnection;
         this.resultSetCache = new ResultSetCache(cacheDirectory);
         this.autocommit = false;

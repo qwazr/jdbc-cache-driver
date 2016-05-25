@@ -22,10 +22,7 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) public class DerbyTest {
@@ -65,10 +62,21 @@ import java.util.Properties;
     @Test
     public void test110TestSimpleStatement() throws SQLException {
         final String sql = "SELECT * FROM FIRSTABLE";
-        // First the cache is created
+        // First the cache is written
         checkResultSet(cnx.createStatement().executeQuery(sql), 3);
         // Second the cache is read
         checkResultSet(cnx.createStatement().executeQuery(sql), 3);
+    }
+
+    @Test
+    public void test110TestPreparedStatement() throws SQLException {
+        final String sql = "SELECT * FROM FIRSTTABLE WHERE ID = ?";
+        final PreparedStatement stmt = cnx.prepareStatement(sql);
+        stmt.setInt(0, 10);
+        // First the cache is written
+        checkResultSet(stmt.executeQuery(), 1);
+        // Second the cache is read
+        checkResultSet(stmt.executeQuery(), 1);
     }
 
 }

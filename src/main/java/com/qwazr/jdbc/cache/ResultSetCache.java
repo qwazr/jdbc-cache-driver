@@ -15,18 +15,38 @@
  */
 package com.qwazr.jdbc.cache;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class ResultSetCache {
 
-    ResultSetCache(final Path cacheDirectory) {
+    private final Path cacheDirectory;
 
+    ResultSetCache(final Path cacheDirectory) throws SQLException {
+        if (!Files.exists(cacheDirectory)) {
+            try {
+                Files.createDirectory(cacheDirectory);
+            } catch (IOException e) {
+                throw new SQLException(e);
+            }
+        }
+        if (!Files.isDirectory(cacheDirectory))
+            throw new SQLException(
+                    "The path is not a directory, or the directory cannot be created: " + cacheDirectory);
+        this.cacheDirectory = cacheDirectory;
     }
 
-    CachedResultSet get(final ResultSetKey key, Provider resultSetProvider) {
-        return null;
+    CachedResultSet get(final ResultSetKey key, Provider resultSetProvider) throws SQLException {
+        final Path resultSetPath = cacheDirectory.resolve(key.getFileName());
+        final ResultSet providedResultSet;
+        if (!Files.exists(resultSetPath)) {
+            providedResultSet = resultSetProvider.provide();
+            ResultSetWriter.write(resultSetPath, providedResultSet);
+        }
+        return new CachedResultSet(resultSetPath);
     }
 
     interface Provider {
