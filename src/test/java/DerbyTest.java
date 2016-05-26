@@ -65,19 +65,21 @@ import java.util.Properties;
         Assert.assertNotNull(cnxCacheNoBackend);
     }
 
-    private final static Object[] ROW1 = { 10, "TEN", null };
-    private final static Object[] ROW2 = { 20, "TWENTY", null };
-    private final static Object[] ROW3 = { 30, "THIRTY", null };
-    private final static Object[] ROW4 = { 40, null, null };
-    private final static Object[] ROW5 = { 50, null, null };
+    final static Object[] ROW1 = { 10, "TEN", null };
+    final static Object[] ROW2 = { 20, "TWENTY", null };
+    final static Object[] ROW3 = { 30, "THIRTY", null };
+    final static Object[] ROW4 = { 40, null, null };
+    final static Object[] ROW5 = { 50, null, null };
 
-    private final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
+    final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
+
+    final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)";
+    final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?)";
 
     @Test
     public void test100createTableAndDataSet() throws SQLException {
-        cnxCacheDisable.createStatement()
-                .executeUpdate("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)");
-        final PreparedStatement stmt = cnxCacheDisable.prepareStatement("INSERT INTO FIRSTTABLE VALUES (?,?,?)");
+        cnxCacheDisable.createStatement().executeUpdate(SQL_TABLE);
+        final PreparedStatement stmt = cnxCacheDisable.prepareStatement(SQL_INSERT);
         for (Object[] row : ROWS) {
             stmt.setInt(1, (Integer) row[0]);
             stmt.setString(2, (String) row[1]);
@@ -99,20 +101,21 @@ import java.util.Properties;
         Assert.assertEquals(rows.length, count);
     }
 
+    final static String SQL_SIMPLE = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
+
     @Test
     public void test110TestSimpleStatement() throws SQLException {
-        final String sql = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
         // First without the cache
-        checkResultSet(cnxCacheDisable.createStatement().executeQuery(sql), ROWS);
+        checkResultSet(cnxCacheDisable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
         // Second the cache is written
-        checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
+        checkResultSet(cnxCacheEnable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
         // Third the cache is read
-        checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
+        checkResultSet(cnxCacheEnable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
         // Last, without the backend
-        checkResultSet(cnxCacheNoBackend.createStatement().executeQuery(sql), ROWS);
+        checkResultSet(cnxCacheNoBackend.createStatement().executeQuery(SQL_SIMPLE), ROWS);
     }
 
-    private final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
+    final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
 
     @Test
     public void test110TestPreparedStatementWithoutCache() throws SQLException {
