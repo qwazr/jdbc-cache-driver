@@ -20,6 +20,8 @@
         </license>
     </licenses>
 
+    <description>A JDBC Driver which acts as a cache</description>
+    
     <organization>
         <name>QWAZR SAS / Emmanuel Keller</name>
         <url>https://www.qwazr.com</url>
