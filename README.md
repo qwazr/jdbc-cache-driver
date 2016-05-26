@@ -23,7 +23,7 @@ The last release:
 <dependency>
   <groupId>com.qwazr</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 </dependency>
 ```
 
@@ -33,7 +33,7 @@ The current Snapshot:
 <dependency>
   <groupId>com.qwazr</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
 </dependency>
 ```
 
