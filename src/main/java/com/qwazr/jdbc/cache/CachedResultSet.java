@@ -21,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -236,9 +238,15 @@ class CachedResultSet implements ResultSet {
             return null;
         if (val instanceof Date)
             return (Date) val;
+        if (val instanceof Timestamp)
+            return new Date(((Timestamp) val).getTime());
         if (val instanceof Number)
             return new Date(((Number) val).longValue());
-        return new Date(Long.parseLong(val.toString()));
+        try {
+            return new Date(DateFormat.getDateInstance().parse(val.toString()).getTime());
+        } catch (ParseException e) {
+            throw new SQLException("Unexpected Date type (" + val.getClass() + ") on column " + columnIndex, e);
+        }
     }
 
     @Override
@@ -250,7 +258,11 @@ class CachedResultSet implements ResultSet {
             return (Time) val;
         if (val instanceof Number)
             return new Time(((Number) val).longValue());
-        return new Time(Long.parseLong(val.toString()));
+        try {
+            return new Time(DateFormat.getTimeInstance().parse(val.toString()).getTime());
+        } catch (ParseException e) {
+            throw new SQLException("Unexpected Time type (" + val.getClass() + ") on column " + columnIndex, e);
+        }
     }
 
     @Override
@@ -262,7 +274,11 @@ class CachedResultSet implements ResultSet {
             return (Timestamp) val;
         if (val instanceof Number)
             return new Timestamp(((Number) val).longValue());
-        return new Timestamp(Long.parseLong(val.toString()));
+        try {
+            return new Timestamp(DateFormat.getDateTimeInstance().parse(val.toString()).getTime());
+        } catch (ParseException e) {
+            throw new SQLException("Unexpected Timestamp type (" + val.getClass() + ") on column " + columnIndex, e);
+        }
     }
 
     @Override

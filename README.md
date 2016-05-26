@@ -17,11 +17,23 @@ Usage
 
 The library is available on Maven Central.
 
+The last release:
+
 ```xml
 <dependency>
   <groupId>com.qwazr</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
   <version>1.0</version>
+</dependency>
+```
+
+The current Snapshot:
+
+```xml
+<dependency>
+  <groupId>com.qwazr</groupId>
+  <artifactId>jdbc-cache-driver</artifactId>
+  <version>1.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -35,12 +47,10 @@ You can use any compliant JDBC driver.
 // Initialize the cache driver
 Class.forName("com.qwazr.jdbc.cache.Driver");
 
-// Initialize the third-party driver
-Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-
-// Provide the URL of the backend driver
+// Provide the URL and the Class name of the backend driver
 Properties info = new Properties();
 info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+info.setProperty("cache.driver.class", "org.apache.derby.jdbc.EmbeddedDriver");
 
 // Get your JDBC connection
 Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
@@ -53,7 +63,10 @@ The syntax of the URL is:
 
 *jdbc:cache:file:{path-to-the-cache-directory}*
 
-The property **cache.driver.url** contains the typical JDBC URL of the backend driver.
+Two possible properties:
+- **cache.driver.url** contains the typical JDBC URL of the backend driver.
+- **cache.driver.class** contains the class name of the backend driver.
+
 The properties are passed to both the cache driver and the backend driver.
 
 ### Use in transparent mode
