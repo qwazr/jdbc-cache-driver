@@ -67,7 +67,8 @@ public class Driver implements java.sql.Driver {
     }
 
     public DriverPropertyInfo[] getPropertyInfo(final String url, final Properties info) throws SQLException {
-        return new DriverPropertyInfo[] { new DriverPropertyInfo(CACHE_DRIVER_URL, null) };
+        return new DriverPropertyInfo[] { new DriverPropertyInfo(CACHE_DRIVER_URL, null),
+                new DriverPropertyInfo(CACHE_DRIVER_CLASS, null), new DriverPropertyInfo(CACHE_DRIVER_ACTIVE, null) };
     }
 
     public int getMajorVersion() {
