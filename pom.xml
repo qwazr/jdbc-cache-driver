@@ -10,7 +10,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <url>https://github.com/qwazr</url>
+    <url>https://github.com/qwazr/jdbc-cache-driver</url>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -18,10 +19,21 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <organization>
         <name>QWAZR SAS / Emmanuel Keller</name>
         <url>https://www.qwazr.com</url>
     </organization>
+
+    <developers>
+        <developer>
+            <name>Emmanuel Keller</name>
+            <email>emmanuel@qwazr.com</email>
+            <organization>QWAZR SAS / Emmanuel Keller</organization>
+            <organizationUrl>https://www.qwazr.com</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</connection>
         <developerConnection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</developerConnection>
