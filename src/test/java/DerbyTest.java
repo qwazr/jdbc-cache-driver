@@ -30,6 +30,8 @@ import java.util.Properties;
 
     private static Connection cnxCacheDisable;
     private static Connection cnxCacheEnable;
+    private static Connection cnxCacheNoBackend;
+
     private static String jdbcCacheUrl;
 
     @BeforeClass
@@ -55,6 +57,12 @@ import java.util.Properties;
         info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
         cnxCacheEnable = DriverManager.getConnection(jdbcCacheUrl, info);
         Assert.assertNotNull(cnxCacheEnable);
+    }
+
+    @Test
+    public void test003initConnectionNoBackend() throws SQLException, IOException, ClassNotFoundException {
+        cnxCacheNoBackend = DriverManager.getConnection(jdbcCacheUrl);
+        Assert.assertNotNull(cnxCacheNoBackend);
     }
 
     private final static Object[] ROW1 = { 10, "TEN", null };
@@ -100,6 +108,8 @@ import java.util.Properties;
         checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
         // Third the cache is read
         checkResultSet(cnxCacheEnable.createStatement().executeQuery(sql), ROWS);
+        // Last, without the backend
+        checkResultSet(cnxCacheNoBackend.createStatement().executeQuery(sql), ROWS);
     }
 
     private final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
@@ -120,6 +130,14 @@ import java.util.Properties;
         // First the cache is written
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
         // Second the cache is read
+        checkResultSet(stmt.executeQuery(), ROW1, ROW4);
+    }
+
+    @Test
+    public void test130TestPreparedStatementNoBackend() throws SQLException {
+        final PreparedStatement stmt = cnxCacheNoBackend.prepareStatement(SQL_PREP);
+        stmt.setInt(1, 10);
+        stmt.setInt(2, 40);
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
     }
 
