@@ -32,28 +32,29 @@ In this example we use Apache Derby as backend driver.
 You can use any compliant JDBC driver.
 
 ```java
-// Initialize the driver of the cache
+// Initialize the cache driver
 Class.forName("com.qwazr.jdbc.cache.Driver");
 
 // Initialize the third-party driver
 Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-```
 
-The property **cache.driver.url** contains the typical JDBC URL of the backend driver.
-The properties are passed to both the cache driver and the backend driver.
-
-```java
+// Provide the URL of the backend driver
 Properties info = new Properties();
 info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+
+// Get your JDBC connection
 Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
 ```
 
-To build a connection you have to provide an URL and properties.
+To build a connection you have to provide the URL and some properties.
 The URL tells the driver where to store the cached ResultSet.
-Thx syntax of the URL is:
+
+The syntax of the URL is:
 
 *jdbc:cache:file:{path-to-the-cache-directory}*
 
+The property **cache.driver.url** contains the typical JDBC URL of the backend driver.
+The properties are passed to both the cache driver and the backend driver.
 
 ### Use in transparent mode
 
@@ -61,10 +62,8 @@ You can also disable the cache by setting **false** to the property **cache.driv
 In this mode, the cache driver is transparent. All the queries and the result handled by the backend-driver.
 
 ```java
-
-info2.setProperty("cache.driver.active", "false");
+info.setProperty("cache.driver.active", "false");
 Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
-
 ```
 
 Community
