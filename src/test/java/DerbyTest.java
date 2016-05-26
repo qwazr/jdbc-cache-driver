@@ -26,7 +26,8 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.Properties;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) public class DerbyTest {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class DerbyTest {
 
     private static Connection cnxCacheDisable;
     private static Connection cnxCacheEnable;
@@ -37,7 +38,6 @@ import java.util.Properties;
     @BeforeClass
     public static void init() throws ClassNotFoundException, IOException {
         Class.forName("com.qwazr.jdbc.cache.Driver");
-        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         final Path tempDir = Files.createTempDirectory("jdbc-cache-test");
         jdbcCacheUrl = "jdbc:cache:file:" + tempDir.toUri().getPath();
     }
@@ -46,6 +46,7 @@ import java.util.Properties;
     public void test001initConnectionWithoutCache() throws SQLException, IOException, ClassNotFoundException {
         final Properties info = new Properties();
         info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+        info.setProperty("cache.driver.class", "org.apache.derby.jdbc.EmbeddedDriver");
         info.setProperty("cache.driver.active", "false");
         cnxCacheDisable = DriverManager.getConnection(jdbcCacheUrl, info);
         Assert.assertNotNull(cnxCacheDisable);
