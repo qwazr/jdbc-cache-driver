@@ -37,72 +37,114 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
 
     @Override
     public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
-
+        if (backendStatement != null)
+            backendStatement.registerOutParameter(parameterIndex, sqlType);
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
-
+        if (backendStatement != null)
+            backendStatement.registerOutParameter(parameterIndex, sqlType, scale);
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public boolean wasNull() throws SQLException {
-        return false;
+        if (backendStatement != null)
+            return backendStatement.wasNull();
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public String getString(int parameterIndex) throws SQLException {
-        return null;
+        if (backendStatement != null)
+            return backendStatement.getString(parameterIndex);
+        else
+            return (String) parameters.get(parameterIndex);
     }
 
     @Override
     public boolean getBoolean(int parameterIndex) throws SQLException {
-        return false;
+        if (backendStatement != null)
+            return backendStatement.getBoolean(parameterIndex);
+        else
+            return (Boolean) parameters.get(parameterIndex);
     }
 
     @Override
     public byte getByte(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getByte(parameterIndex);
+        else
+            return (Byte) parameters.get(parameterIndex);
     }
 
     @Override
     public short getShort(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getShort(parameterIndex);
+        else
+            return (Short) parameters.get(parameterIndex);
     }
 
     @Override
     public int getInt(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getInt(parameterIndex);
+        else
+            return (Integer) parameters.get(parameterIndex);
     }
 
     @Override
     public long getLong(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getLong(parameterIndex);
+        else
+            return (Long) parameters.get(parameterIndex);
     }
 
     @Override
     public float getFloat(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getFloat(parameterIndex);
+        else
+            return (Float) parameters.get(parameterIndex);
     }
 
     @Override
     public double getDouble(int parameterIndex) throws SQLException {
-        return 0;
+        if (backendStatement != null)
+            return backendStatement.getDouble(parameterIndex);
+        else
+            return (Double) parameters.get(parameterIndex);
     }
 
     @Override
     public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
-        return null;
+        if (backendStatement != null)
+            return backendStatement.getBigDecimal(parameterIndex);
+        else
+            return (BigDecimal) parameters.get(parameterIndex);
     }
 
     @Override
     public byte[] getBytes(int parameterIndex) throws SQLException {
-        return new byte[0];
+        if (backendStatement != null)
+            return backendStatement.getBytes(parameterIndex);
+        else
+            return (byte[]) parameters.get(parameterIndex);
     }
 
     @Override
     public Date getDate(int parameterIndex) throws SQLException {
-        return null;
+        if (backendStatement != null)
+            return backendStatement.getDate(parameterIndex);
+        else
+            return (Date) parameters.get(parameterIndex);
     }
 
     @Override

@@ -27,7 +27,7 @@ import java.util.TreeMap;
 class CachedPreparedStatement<T extends PreparedStatement> extends CachedStatement<T> implements PreparedStatement {
 
     private final String sql;
-    private final SortedMap<Integer, Object> parameters;
+    protected final SortedMap<Integer, Object> parameters;
 
     CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql,
             final int resultSetConcurrency, final int resultSetType, final int resultSetHoldability) {

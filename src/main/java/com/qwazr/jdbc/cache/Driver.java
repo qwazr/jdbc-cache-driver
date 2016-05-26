@@ -22,13 +22,14 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Driver implements java.sql.Driver {
+public class Driver implements java.sql.Driver {
 
     final static Logger LOGGER = Logger.getLogger(Driver.class.getPackage().getName());
 
-    private final static String URL_PREFIX = "jdbc:cache:file:";
-    private final static String CACHE_DRIVER_URL = "cache.driver.url";
-    private final static String CACHE_DRIVER_ACTIVE = "cache.driver.active";
+    public final static String URL_PREFIX = "jdbc:cache:file:";
+    public final static String CACHE_DRIVER_URL = "cache.driver.url";
+    public final static String CACHE_DRIVER_CLASS = "cache.driver.class";
+    public final static String CACHE_DRIVER_ACTIVE = "cache.driver.active";
 
     static {
         try {
@@ -42,6 +43,13 @@ class Driver implements java.sql.Driver {
 
         // Determine the optional backend connection
         final String cacheDriverUrl = info.getProperty(CACHE_DRIVER_URL);
+        final String cacheDriverClass = info.getProperty(CACHE_DRIVER_CLASS);
+        try {
+            if (cacheDriverClass != null && !cacheDriverClass.isEmpty())
+                Class.forName(cacheDriverClass);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Cannot initialize the driver: " + cacheDriverClass, e);
+        }
         final String cacheDriverActive = info.getProperty(CACHE_DRIVER_ACTIVE);
         final boolean active = cacheDriverActive == null ? true : Boolean.parseBoolean(cacheDriverActive);
 
