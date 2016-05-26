@@ -6,8 +6,10 @@
 [![Javadocs](http://www.javadoc.io/badge/com.qwazr/jdbc-cache-driver.svg)](http://www.javadoc.io/doc/com.qwazr/jdbc-cache-driver)
 
 
-JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in a file.
+JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files.
 The same query requested again will be read from the file, the database is no more requested again.
+
+You may use it to easily mock ResultSets from a database.
 
 JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any third-party JDBC driver.
 
