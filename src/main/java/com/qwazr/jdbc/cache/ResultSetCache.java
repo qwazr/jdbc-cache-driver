@@ -68,17 +68,14 @@ class ResultSetCache {
     }
 
     /**
-     * Check if an entry is available for this key. If not, an SQLException is thrown.
+     * Check if an entry is available for this key.
      *
      * @param key the computed key
-     * @return always true
-     * @throws SQLException
+     * @return always true if the cache entry exists
      */
-    final boolean checkExists(final String key) throws SQLException {
+    final boolean checkIfExists(final String key) {
         final Path resultSetPath = cacheDirectory.resolve(key);
-        if (!Files.exists(resultSetPath))
-            throw new SQLException("No cache available");
-        return true;
+        return Files.exists(resultSetPath);
     }
 
     interface Provider {

@@ -206,10 +206,12 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public boolean execute() throws SQLException {
+        if (connection.resultSetCache.checkIfExists(ResultSetCache.getKey(executedSql, parameters)))
+            return true;
         if (backendStatement != null)
             return backendStatement.execute();
         else
-            return connection.resultSetCache.checkExists(ResultSetCache.getKey(executedSql, parameters));
+            throw new SQLException("No cache entry");
     }
 
     @Override
