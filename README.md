@@ -4,19 +4,16 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver)
 [![Join the chat at https://gitter.im/qwazr/jdbc-cache-driver](https://badges.gitter.im/qwazr/jdbc-cache-driver.svg)](https://gitter.im/qwazr/jdbc-cache-driver)
 
-How it works
-------------
 
-JDBC-Driver-Cache is JDBC driver which store the result of a SQL query (ResultSet) in a file.
-If you request the same query again, the database is no more requested.
-The drive uses the cached ResultSet.
+JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in a file.
+The same query requested again will be read from the file, the database is no more requested again.
 
-JDBC-Driver-Cache acts as a wrapper over any third-party JDBC driver.
-It uses this driver as backend to first retrieve the ResultSet.
-
+JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any third-party JDBC driver.
 
 Usage
 -----
+
+### Add the driver in your maven projet
 
 The library is available on Maven Central.
 
@@ -28,18 +25,27 @@ The library is available on Maven Central.
 </dependency>
 ```
 
+### JAVA Code example
+
 First, you have to initialize the JDBC drivers.
 In this example we use Apache Derby as backend driver.
 You can use any compliant JDBC driver.
 
 ```java
-
 // Initialize the driver of the cache
 Class.forName("com.qwazr.jdbc.cache.Driver");
 
 // Initialize the third-party driver
 Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+```
 
+The property **cache.driver.url** contains the typical JDBC URL of the backend driver.
+The properties are passed to both the cache driver and the backend driver.
+
+```java
+Properties info = new Properties();
+info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
 ```
 
 To build a connection you have to provide an URL and properties.
@@ -48,16 +54,8 @@ Thx syntax of the URL is:
 
 *jdbc:cache:file:{path-to-the-cache-directory}*
 
-The property **cache.driver.url** contains the typical JDBC URL of the backend driver.
-The properties are passed to both the cache driver and the backend driver.
 
-```java
-
-Properties info = new Properties();
-info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
-Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
-
-```
+### Use in transparent mode
 
 You can also disable the cache by setting **false** to the property **cache.driver.active**.
 In this mode, the cache driver is transparent. All the queries and the result handled by the backend-driver.
@@ -69,8 +67,10 @@ Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", 
 
 ```
 
-Issues
-------
+Community
+---------
+
+JDBC-Driver-Cache is open source and is licensed under the Apache 2.0 License.
 
 Report any issue here:
 https://github.com/qwazr/jdbc-cache-driver/issues
