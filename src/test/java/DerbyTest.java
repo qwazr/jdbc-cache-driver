@@ -104,33 +104,53 @@ public class DerbyTest {
 
     final static String SQL_SIMPLE = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
 
+    private ResultSet executeQuery(Connection cnx) throws SQLException {
+        final Statement stmt = cnx.createStatement();
+        return stmt.executeQuery(SQL_SIMPLE);
+    }
+
     @Test
     public void test110TestSimpleStatement() throws SQLException {
         // First without the cache
-        checkResultSet(cnxCacheDisable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
+        checkResultSet(executeQuery(cnxCacheDisable), ROWS);
         // Second the cache is written
-        checkResultSet(cnxCacheEnable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
+        checkResultSet(executeQuery(cnxCacheEnable), ROWS);
         // Third the cache is read
-        checkResultSet(cnxCacheEnable.createStatement().executeQuery(SQL_SIMPLE), ROWS);
+        checkResultSet(executeQuery(cnxCacheEnable), ROWS);
         // Last, without the backend
-        checkResultSet(cnxCacheNoBackend.createStatement().executeQuery(SQL_SIMPLE), ROWS);
+        checkResultSet(executeQuery(cnxCacheNoBackend), ROWS);
+    }
+
+    private ResultSet updateGetResultSet(Connection cnx) throws SQLException {
+        final Statement stmt = cnx.createStatement();
+        stmt.execute(SQL_SIMPLE);
+        return stmt.getResultSet();
+    }
+
+    @Test
+    public void test110TestUpdateAndGetResultSet() throws SQLException {
+        checkResultSet(updateGetResultSet(cnxCacheDisable), ROWS);
+        checkResultSet(updateGetResultSet(cnxCacheEnable), ROWS);
+        checkResultSet(updateGetResultSet(cnxCacheNoBackend), ROWS);
     }
 
     final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
 
-    @Test
-    public void test110TestPreparedStatementWithoutCache() throws SQLException {
-        final PreparedStatement stmt = cnxCacheDisable.prepareStatement(SQL_PREP);
+    private PreparedStatement getPreparedStatement(Connection cnx) throws SQLException {
+        final PreparedStatement stmt = cnx.prepareStatement(SQL_PREP);
         stmt.setInt(1, 10);
         stmt.setInt(2, 40);
-        checkResultSet(stmt.executeQuery(), ROW1, ROW4);
+        return stmt;
+    }
+
+    @Test
+    public void test110TestPreparedStatementWithoutCache() throws SQLException {
+        checkResultSet(getPreparedStatement(cnxCacheDisable).executeQuery(), ROW1, ROW4);
     }
 
     @Test
     public void test120TestPreparedStatementWithCache() throws SQLException {
-        final PreparedStatement stmt = cnxCacheEnable.prepareStatement(SQL_PREP);
-        stmt.setInt(1, 10);
-        stmt.setInt(2, 40);
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheEnable);
         // First the cache is written
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
         // Second the cache is read
@@ -139,10 +159,15 @@ public class DerbyTest {
 
     @Test
     public void test130TestPreparedStatementNoBackend() throws SQLException {
-        final PreparedStatement stmt = cnxCacheNoBackend.prepareStatement(SQL_PREP);
-        stmt.setInt(1, 10);
-        stmt.setInt(2, 40);
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
+    }
+
+    @Test
+    public void test135TestPreparedStatementGetResultSet() throws SQLException {
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
+        stmt.execute();
+        checkResultSet(stmt.getResultSet(), ROW1, ROW4);
     }
 
 }

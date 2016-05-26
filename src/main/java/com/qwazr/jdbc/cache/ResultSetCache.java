@@ -43,15 +43,42 @@ class ResultSetCache {
         this.cacheDirectory = cacheDirectory;
     }
 
-    CachedResultSet get(final CachedStatement statement, final String key, final Provider resultSetProvider)
+    /**
+     * Return the cached ResultSet for the given key.
+     * If the entry does not exist the ResultSet is extracted by calling the given resultSetProvider.
+     * If the entry does not exist and no resultSetProvider is given (null) an SQLException is thrown.
+     *
+     * @param statement         the cached statement
+     * @param key               the generated key for this statement
+     * @param resultSetProvider the optional result provider
+     * @return the cached ResultSet
+     * @throws SQLException
+     */
+    final CachedResultSet get(final CachedStatement statement, final String key, final Provider resultSetProvider)
             throws SQLException {
         final Path resultSetPath = cacheDirectory.resolve(key);
         final ResultSet providedResultSet;
         if (!Files.exists(resultSetPath)) {
+            if (resultSetProvider == null)
+                throw new SQLException("No cache available");
             providedResultSet = resultSetProvider.provide();
             ResultSetWriter.write(resultSetPath, providedResultSet);
         }
         return new CachedResultSet(statement, resultSetPath);
+    }
+
+    /**
+     * Check if an entry is available for this key. If not, an SQLException is thrown.
+     *
+     * @param key the computed key
+     * @return always true
+     * @throws SQLException
+     */
+    final boolean checkExists(final String key) throws SQLException {
+        final Path resultSetPath = cacheDirectory.resolve(key);
+        if (!Files.exists(resultSetPath))
+            throw new SQLException("No cache available");
+        return true;
     }
 
     interface Provider {

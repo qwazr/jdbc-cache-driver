@@ -26,14 +26,13 @@ import java.util.TreeMap;
 
 class CachedPreparedStatement<T extends PreparedStatement> extends CachedStatement<T> implements PreparedStatement {
 
-    private final String sql;
     protected final SortedMap<Integer, Object> parameters;
 
     CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql,
             final int resultSetConcurrency, final int resultSetType, final int resultSetHoldability) {
         super(connection, backendStatement, resultSetConcurrency, resultSetType, resultSetHoldability);
         this.parameters = new TreeMap<>();
-        this.sql = sql;
+        this.executedSql = sql;
     }
 
     CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql) {
@@ -42,7 +41,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        final String cacheKey = ResultSetCache.getKey(sql, parameters);
+        final String cacheKey = ResultSetCache.getKey(executedSql, parameters);
         return connection.resultSetCache.get(this, cacheKey, () -> backendStatement.executeQuery());
     }
 
@@ -52,6 +51,13 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
             return backendStatement.executeUpdate();
         else
             throw new SQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public ResultSet getResultSet() throws SQLException {
+        final String cacheKey = ResultSetCache.getKey(executedSql, parameters);
+        return connection.resultSetCache
+                .get(this, cacheKey, backendStatement == null ? null : backendStatement::getResultSet);
     }
 
     @Override
@@ -203,7 +209,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
         if (backendStatement != null)
             return backendStatement.execute();
         else
-            throw new SQLFeatureNotSupportedException();
+            return connection.resultSetCache.checkExists(ResultSetCache.getKey(executedSql, parameters));
     }
 
     @Override

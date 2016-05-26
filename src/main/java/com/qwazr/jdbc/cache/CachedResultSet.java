@@ -57,7 +57,7 @@ class CachedResultSet implements ResultSet {
             this.columnNames = new HashMap<>();
             int i = 0;
             for (ResultSetWriter.ColumnDef column : metaData.columns)
-                this.columnNames.put(column.label, i++);
+                this.columnNames.put(column.label, ++i);
             readNext();
         } catch (IOException e) {
             try {
