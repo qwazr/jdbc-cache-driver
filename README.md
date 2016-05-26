@@ -21,7 +21,7 @@ The library is available on Maven Central.
 <dependency>
   <groupId>com.qwazr</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 </dependency>
 ```
 
