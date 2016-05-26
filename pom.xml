@@ -21,8 +21,8 @@
         <url>https://www.qwazr.com</url>
     </organization>
     <scm>
-        <connection>scm:git:git@github.com:qwazr/QWAZR.git</connection>
-        <developerConnection>scm:git:git@github.com:qwazr/QWAZR.git</developerConnection>
+        <connection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</connection>
+        <developerConnection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</developerConnection>
         <url>git@github.com:qwazr/jdbc-cache-driver.git</url>
       <tag>HEAD</tag>
   </scm>
