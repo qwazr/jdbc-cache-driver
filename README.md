@@ -4,7 +4,6 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver)
 [![Join the chat at https://gitter.im/qwazr/QWAZR](https://badges.gitter.im/qwazr/QWAZR.svg)](https://gitter.im/qwazr/QWAZR)
 [![Javadocs](http://www.javadoc.io/badge/com.qwazr/jdbc-cache-driver.svg)](http://www.javadoc.io/doc/com.qwazr/jdbc-cache-driver)
-[![Coverity](https://scan.coverity.com/projects/8991/badge.svg)](https://scan.coverity.com/projects/qwazr-jdbc-cache-driver)
 [![Coverage Status](https://coveralls.io/repos/github/qwazr/jdbc-cache-driver/badge.svg?branch=master)](https://coveralls.io/github/qwazr/jdbc-cache-driver?branch=master)
 
 JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files.
