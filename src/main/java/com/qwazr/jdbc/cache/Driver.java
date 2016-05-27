@@ -41,6 +41,9 @@ public class Driver implements java.sql.Driver {
 
     public Connection connect(String url, Properties info) throws SQLException {
 
+        if (!acceptsURL(url))
+            return null;
+
         // Determine the optional backend connection
         final String cacheDriverUrl = info.getProperty(CACHE_DRIVER_URL);
         final String cacheDriverClass = info.getProperty(CACHE_DRIVER_CLASS);
@@ -50,11 +53,13 @@ public class Driver implements java.sql.Driver {
         } catch (ClassNotFoundException e) {
             throw new SQLException("Cannot initialize the driver: " + cacheDriverClass, e);
         }
+
         final String cacheDriverActive = info.getProperty(CACHE_DRIVER_ACTIVE);
         final boolean active = cacheDriverActive == null ? true : Boolean.parseBoolean(cacheDriverActive);
 
-        final Connection backendConnection =
-                cacheDriverUrl == null ? null : DriverManager.getConnection(cacheDriverUrl, info);
+        final Connection backendConnection = cacheDriverUrl == null || cacheDriverUrl.isEmpty() ?
+                null :
+                DriverManager.getConnection(cacheDriverUrl, info);
 
         if (url.length() <= URL_PREFIX.length())
             throw new SQLException("The path is empty: " + url);
@@ -63,7 +68,7 @@ public class Driver implements java.sql.Driver {
     }
 
     public boolean acceptsURL(String url) throws SQLException {
-        return url.startsWith(URL_PREFIX);
+        return url != null && url.startsWith(URL_PREFIX);
     }
 
     public DriverPropertyInfo[] getPropertyInfo(final String url, final Properties info) throws SQLException {
