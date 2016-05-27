@@ -52,7 +52,7 @@ class ResultSetCache {
      * @param key               the generated key for this statement
      * @param resultSetProvider the optional result provider
      * @return the cached ResultSet
-     * @throws SQLException
+     * @throws SQLException if the statement cannot be executed
      */
     final CachedResultSet get(final CachedStatement statement, final String key, final Provider resultSetProvider)
             throws SQLException {
