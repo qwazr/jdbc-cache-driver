@@ -61,8 +61,20 @@ class ResultSetCache {
         if (!Files.exists(resultSetPath)) {
             if (resultSetProvider == null)
                 throw new SQLException("No cache available");
-            providedResultSet = resultSetProvider.provide();
-            ResultSetWriter.write(resultSetPath, providedResultSet);
+            final Path tempPath = cacheDirectory.resolve(key + "." + System.currentTimeMillis() + ".tmp");
+            try {
+                providedResultSet = resultSetProvider.provide();
+                ResultSetWriter.write(tempPath, providedResultSet);
+                Files.move(tempPath, resultSetPath);
+            } catch (IOException e) {
+                throw new SQLException("Failed in renaming the file " + tempPath, e);
+            } finally {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException e) {
+                    // Quiet
+                }
+            }
         }
         return new CachedResultSet(statement, resultSetPath);
     }
