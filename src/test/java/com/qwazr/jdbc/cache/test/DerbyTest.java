@@ -78,8 +78,10 @@ public class DerbyTest {
 
     final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
 
-    final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP, "
-            + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, LO BIGINT)";
+    final static String[] COLUMNS = { "ID", "NAME", "TS", "DT1", "DT2", "TI1", "TI2", "DBL", "FL", "TI", "BI" };
+
+    final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), TS TIMESTAMP, "
+            + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, BI BIGINT)";
     final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 
     @Test
@@ -107,22 +109,75 @@ public class DerbyTest {
         }
     }
 
+    private void checkColString(final Object object, final int i, final ResultSet resultSet) throws SQLException {
+        if (object == null) {
+            Assert.assertNull(resultSet.getString(COLUMNS[i]));
+            Assert.assertNull(resultSet.getString(i + 1));
+        } else {
+            Assert.assertEquals(object.toString(), resultSet.getString(COLUMNS[i]));
+            Assert.assertEquals(object.toString(), resultSet.getString(i + 1));
+        }
+    }
+
+    private void checkWasNull(final Object object, final int i, final ResultSet resultSet) throws SQLException {
+        if (object == null)
+            Assert.assertTrue(resultSet.wasNull());
+        else
+            Assert.assertFalse(resultSet.wasNull());
+    }
+
     private void checkResultSet(ResultSet resultSet, Object[]... rows) throws SQLException {
         Assert.assertNotNull("The resultSet is null", resultSet);
         int count = 0;
         while (resultSet.next()) {
             int i = 0;
-            Assert.assertEquals(rows[count][i++], resultSet.getInt(i));
-            Assert.assertEquals(rows[count][i++], resultSet.getString(i));
-            Assert.assertEquals(rows[count][i++], resultSet.getTimestamp(i));
-            Assert.assertEquals(rows[count][i++].toString(), resultSet.getDate(i).toString());
-            Assert.assertEquals(rows[count][i++].toString(), resultSet.getDate(i, Calendar.getInstance()).toString());
-            Assert.assertEquals(rows[count][i++].toString(), resultSet.getTime(i).toString());
-            Assert.assertEquals(rows[count][i++].toString(), resultSet.getTime(i, Calendar.getInstance()).toString());
-            Assert.assertEquals(rows[count][i++], resultSet.getDouble(i));
-            Assert.assertEquals(rows[count][i++], resultSet.getFloat(i));
-            Assert.assertEquals(rows[count][i++], resultSet.getShort(i));
-            Assert.assertEquals(rows[count][i++], resultSet.getLong(i));
+            int j = 1;
+            final Object[] row = rows[count];
+            Assert.assertEquals(row[i], resultSet.getInt(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getInt(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getString(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getString(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getTimestamp(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getTimestamp(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i].toString(), resultSet.getDate(COLUMNS[i]).toString());
+            Assert.assertEquals(row[i].toString(), resultSet.getDate(j++).toString());
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i].toString(), resultSet.getDate(COLUMNS[i], Calendar.getInstance()).toString());
+            Assert.assertEquals(row[i].toString(), resultSet.getDate(j++, Calendar.getInstance()).toString());
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i].toString(), resultSet.getTime(COLUMNS[i]).toString());
+            Assert.assertEquals(row[i].toString(), resultSet.getTime(j++).toString());
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i].toString(), resultSet.getTime(COLUMNS[i], Calendar.getInstance()).toString());
+            Assert.assertEquals(row[i].toString(), resultSet.getTime(j++, Calendar.getInstance()).toString());
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getDouble(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getDouble(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getFloat(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getFloat(j++));
+            // Disabled because precision issue
+            // checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getShort(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getShort(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
+            Assert.assertEquals(row[i], resultSet.getLong(COLUMNS[i]));
+            Assert.assertEquals(row[i], resultSet.getLong(j++));
+            checkColString(row[i], i, resultSet);
+            checkWasNull(row[i], i++, resultSet);
             count++;
         }
         Assert.assertEquals(rows.length, count);
