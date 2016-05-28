@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.qwazr.jdbc.cache.test;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Properties;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -66,26 +68,41 @@ public class DerbyTest {
         Assert.assertNotNull(cnxCacheNoBackend);
     }
 
-    final static Object[] ROW1 = { 10, "TEN", null };
-    final static Object[] ROW2 = { 20, "TWENTY", null };
-    final static Object[] ROW3 = { 30, "THIRTY", null };
-    final static Object[] ROW4 = { 40, null, null };
-    final static Object[] ROW5 = { 50, null, null };
+    final static Long TS = System.currentTimeMillis();
+
+    final static Object[] ROW1 = { 10, "TEN", null, null, null, null, null, 1.11D, 1.1F, (short) 1, 1000000L };
+    final static Object[] ROW2 = { 20, "TWENTY", null, null, null, null, null, 2.22D, 2.2F, (short) 2, 2000000L };
+    final static Object[] ROW3 = { 30, "THIRTY", null, null, null, null, null, 3.33D, 3.3F, (short) 3, 3000000L };
+    final static Object[] ROW4 = { 40, null, null, null, null, null, null, 4.44D, 4.4F, (short) 4, 4000000L };
+    final static Object[] ROW5 = { 50, null, null, null, null, null, null, 5.55D, 5.5F, (short) 5, 5000000L };
 
     final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
 
-    final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP)";
-    final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?)";
+    final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), CREATED TIMESTAMP, "
+            + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, LO BIGINT)";
+    final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 
     @Test
-    public void test100createTableAndDataSet() throws SQLException {
+    public void test100createTableAndDataSet() throws SQLException, InterruptedException {
         cnxCacheDisable.createStatement().executeUpdate(SQL_TABLE);
         final PreparedStatement stmt = cnxCacheDisable.prepareStatement(SQL_INSERT);
         for (Object[] row : ROWS) {
-            stmt.setInt(1, (Integer) row[0]);
-            stmt.setString(2, (String) row[1]);
-            row[2] = new Timestamp(System.currentTimeMillis());
-            stmt.setTimestamp(3, (Timestamp) row[2]);
+            int i = 0;
+            // For date/time/stamp columns
+            Thread.sleep(10);
+            final long ts = System.currentTimeMillis();
+
+            stmt.setInt(i + 1, (Integer) row[i++]);
+            stmt.setString(i + 1, (String) row[i++]);
+            stmt.setTimestamp(i + 1, (Timestamp) (row[i++] = new Timestamp(ts)));
+            stmt.setDate(i + 1, (Date) (row[i++] = new Date(ts)));
+            stmt.setDate(i + 1, (Date) (row[i++] = new Date(ts)), Calendar.getInstance());
+            stmt.setTime(i + 1, (Time) (row[i++] = new Time(ts)));
+            stmt.setTime(i + 1, (Time) (row[i++] = new Time(ts)), Calendar.getInstance());
+            stmt.setDouble(i + 1, (double) row[i++]);
+            stmt.setFloat(i + 1, (float) row[i++]);
+            stmt.setShort(i + 1, (short) row[i++]);
+            stmt.setLong(i + 1, (long) row[i++]);
             Assert.assertEquals(1, stmt.executeUpdate());
         }
     }
@@ -94,15 +111,24 @@ public class DerbyTest {
         Assert.assertNotNull("The resultSet is null", resultSet);
         int count = 0;
         while (resultSet.next()) {
-            Assert.assertEquals(rows[count][0], resultSet.getInt(1));
-            Assert.assertEquals(rows[count][1], resultSet.getString(2));
-            Assert.assertEquals(rows[count][2], resultSet.getTimestamp(3));
+            int i = 0;
+            Assert.assertEquals(rows[count][i++], resultSet.getInt(i));
+            Assert.assertEquals(rows[count][i++], resultSet.getString(i));
+            Assert.assertEquals(rows[count][i++], resultSet.getTimestamp(i));
+            Assert.assertEquals(rows[count][i++].toString(), resultSet.getDate(i).toString());
+            Assert.assertEquals(rows[count][i++].toString(), resultSet.getDate(i, Calendar.getInstance()).toString());
+            Assert.assertEquals(rows[count][i++].toString(), resultSet.getTime(i).toString());
+            Assert.assertEquals(rows[count][i++].toString(), resultSet.getTime(i, Calendar.getInstance()).toString());
+            Assert.assertEquals(rows[count][i++], resultSet.getDouble(i));
+            Assert.assertEquals(rows[count][i++], resultSet.getFloat(i));
+            Assert.assertEquals(rows[count][i++], resultSet.getShort(i));
+            Assert.assertEquals(rows[count][i++], resultSet.getLong(i));
             count++;
         }
         Assert.assertEquals(rows.length, count);
     }
 
-    final static String SQL_SIMPLE = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE";
+    final static String SQL_SIMPLE = "SELECT * FROM FIRSTTABLE";
 
     private ResultSet executeQuery(Connection cnx) throws SQLException {
         final Statement stmt = cnx.createStatement();
@@ -134,7 +160,7 @@ public class DerbyTest {
         checkResultSet(updateGetResultSet(cnxCacheNoBackend), ROWS);
     }
 
-    final static String SQL_PREP = "SELECT ID,NAME,CREATED  FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
+    final static String SQL_PREP = "SELECT * FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
 
     private PreparedStatement getPreparedStatement(Connection cnx) throws SQLException {
         final PreparedStatement stmt = cnx.prepareStatement(SQL_PREP);
