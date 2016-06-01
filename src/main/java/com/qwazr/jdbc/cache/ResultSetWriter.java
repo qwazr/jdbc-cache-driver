@@ -337,8 +337,13 @@ class ResultSetWriter {
             final long size = clob.length();
             output.writeUTF(size == 0 ? "" : clob.getSubString(1, (int) clob.length()));
         } finally {
-            if (clob != null)
-                clob.free();
+            if (clob != null) {
+                try {
+                    clob.free();
+                } catch (AbstractMethodError e) {
+                    // May occur with old JDBC drivers
+                }
+            }
         }
     }
 
