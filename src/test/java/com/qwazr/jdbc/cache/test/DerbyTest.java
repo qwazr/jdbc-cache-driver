@@ -133,11 +133,22 @@ public class DerbyTest {
 
     private void checkResultSet(ResultSet resultSet, Object[]... rows) throws SQLException, IOException {
         Assert.assertNotNull("The resultSet is null", resultSet);
+
+        if (resultSet.getType() != ResultSet.TYPE_FORWARD_ONLY)
+            Assert.assertTrue(resultSet.isBeforeFirst());
+
         int count = 0;
         while (resultSet.next()) {
             int i = 0;
             int j = 1;
             final Object[] row = rows[count];
+
+            if (resultSet.getType() != ResultSet.TYPE_FORWARD_ONLY) {
+                if (count == 0)
+                    Assert.assertTrue(resultSet.isFirst());
+                else
+                    Assert.assertFalse(resultSet.isFirst());
+            }
 
             Assert.assertEquals(row[i], resultSet.getInt(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getInt(j++));
@@ -210,6 +221,13 @@ public class DerbyTest {
             count++;
         }
         Assert.assertEquals(rows.length, count);
+
+        if (resultSet.getType() != ResultSet.TYPE_FORWARD_ONLY)
+            Assert.assertTrue(resultSet.isAfterLast());
+
+        Assert.assertFalse(resultSet.isClosed());
+        resultSet.close();
+        Assert.assertTrue(resultSet.isClosed());
     }
 
     final static String SQL_SIMPLE = "SELECT * FROM FIRSTTABLE";
