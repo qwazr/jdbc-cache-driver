@@ -806,8 +806,10 @@ class CachedResultSet implements ResultSet {
 
     @Override
     public Clob getClob(int columnIndex) throws SQLException {
-        checkColumn(columnIndex);
-        return null;
+        final Object val = checkColumn(columnIndex);
+        if (val == null)
+            return null;
+        return new ClobString(val.toString());
     }
 
     @Override

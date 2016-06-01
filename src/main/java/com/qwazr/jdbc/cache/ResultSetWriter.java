@@ -15,10 +15,7 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.*;
@@ -185,6 +182,9 @@ class ResultSetWriter {
                 case Types.ROWID:
                     writeRowId(i, resultSet, output);
                     break;
+                case Types.CLOB:
+                    writeClob(i, resultSet, output);
+                    break;
                 case Types.BINARY:
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
@@ -195,7 +195,6 @@ class ResultSetWriter {
                 case Types.STRUCT:
                 case Types.ARRAY:
                 case Types.BLOB:
-                case Types.CLOB:
                 case Types.REF:
                 case Types.DATALINK:
                 case Types.NCLOB:
@@ -326,6 +325,23 @@ class ResultSetWriter {
             output.writeUTF(val.toString());
     }
 
+    private static void writeClob(final int column, final ResultSet resultSet, final DataOutputStream output)
+            throws SQLException, IOException {
+        final Clob clob = resultSet.getClob(column);
+        try {
+            final boolean wasNull = resultSet.wasNull();
+            output.writeBoolean(!wasNull);
+            if (wasNull)
+                return;
+            // TODO Support reader for long sized string
+            final long size = clob.length();
+            output.writeUTF(size == 0 ? "" : clob.getSubString(1, (int) clob.length()));
+        } finally {
+            if (clob != null)
+                clob.free();
+        }
+    }
+
     private static void writeNull(final DataOutputStream output) throws IOException {
         output.writeBoolean(false);
     }
@@ -370,6 +386,8 @@ class ResultSetWriter {
             return new java.sql.Timestamp(input.readLong());
         case Types.ROWID:
             return input.readUTF();
+        case Types.CLOB:
+            return input.readUTF();
         case Types.BINARY:
         case Types.VARBINARY:
         case Types.LONGVARBINARY:
@@ -380,7 +398,6 @@ class ResultSetWriter {
         case Types.STRUCT:
         case Types.ARRAY:
         case Types.BLOB:
-        case Types.CLOB:
         case Types.REF:
         case Types.DATALINK:
         case Types.NCLOB:

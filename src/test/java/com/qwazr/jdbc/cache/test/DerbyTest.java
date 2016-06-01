@@ -15,6 +15,7 @@
  */
 package com.qwazr.jdbc.cache.test;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -22,6 +23,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
@@ -68,21 +71,21 @@ public class DerbyTest {
         Assert.assertNotNull(cnxCacheNoBackend);
     }
 
-    final static Long TS = System.currentTimeMillis();
-
-    final static Object[] ROW1 = { 10, "TEN", null, null, null, null, null, 1.11D, 1.1F, (short) 1, 1000000L };
-    final static Object[] ROW2 = { 20, "TWENTY", null, null, null, null, null, 2.22D, 2.2F, (short) 2, 2000000L };
-    final static Object[] ROW3 = { 30, "THIRTY", null, null, null, null, null, 3.33D, 3.3F, (short) 3, 3000000L };
-    final static Object[] ROW4 = { 40, null, null, null, null, null, null, 4.44D, 4.4F, (short) 4, 4000000L };
-    final static Object[] ROW5 = { 50, null, null, null, null, null, null, 5.55D, 5.5F, (short) 5, 5000000L };
+    final static Object[] ROW1 = { 10, "TEN", null, null, null, null, null, 1.11D, 1.1F, (short) 1, 1000000L, "clob1" };
+    final static Object[] ROW2 = { 20, "TWENTY", null, null, null, null, null, 2.22D, 2.2F, (short) 2, 2000000L,
+            "clob2" };
+    final static Object[] ROW3 = { 30, "THIRTY", null, null, null, null, null, 3.33D, 3.3F, (short) 3, 3000000L,
+            "clob3" };
+    final static Object[] ROW4 = { 40, null, null, null, null, null, null, 4.44D, 4.4F, (short) 4, 4000000L, "clob4" };
+    final static Object[] ROW5 = { 50, null, null, null, null, null, null, 5.55D, 5.5F, (short) 5, 5000000L, null };
 
     final static Object[][] ROWS = { ROW1, ROW2, ROW3, ROW4, ROW5 };
 
-    final static String[] COLUMNS = { "ID", "NAME", "TS", "DT1", "DT2", "TI1", "TI2", "DBL", "FL", "TI", "BI" };
+    final static String[] COLUMNS = { "ID", "NAME", "TS", "DT1", "DT2", "TI1", "TI2", "DBL", "FL", "TI", "BI", "CL" };
 
     final static String SQL_TABLE = "CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), TS TIMESTAMP, "
-            + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, BI BIGINT)";
-    final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+            + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, BI BIGINT, CL CLOB)";
+    final static String SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
     @Test
     public void test100createTableAndDataSet() throws SQLException, InterruptedException {
@@ -105,6 +108,8 @@ public class DerbyTest {
             stmt.setFloat(i + 1, (float) row[i++]);
             stmt.setShort(i + 1, (short) row[i++]);
             stmt.setLong(i + 1, (long) row[i++]);
+            final String clob = (String) row[i++];
+            stmt.setClob(i, clob == null ? null : new StringReader(clob));
             Assert.assertEquals(1, stmt.executeUpdate());
         }
     }
@@ -126,58 +131,82 @@ public class DerbyTest {
             Assert.assertFalse(resultSet.wasNull());
     }
 
-    private void checkResultSet(ResultSet resultSet, Object[]... rows) throws SQLException {
+    private void checkResultSet(ResultSet resultSet, Object[]... rows) throws SQLException, IOException {
         Assert.assertNotNull("The resultSet is null", resultSet);
         int count = 0;
         while (resultSet.next()) {
             int i = 0;
             int j = 1;
             final Object[] row = rows[count];
+
             Assert.assertEquals(row[i], resultSet.getInt(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getInt(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getString(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getString(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getTimestamp(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getTimestamp(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i].toString(), resultSet.getDate(COLUMNS[i]).toString());
             Assert.assertEquals(row[i].toString(), resultSet.getDate(j++).toString());
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i].toString(), resultSet.getDate(COLUMNS[i], Calendar.getInstance()).toString());
             Assert.assertEquals(row[i].toString(), resultSet.getDate(j++, Calendar.getInstance()).toString());
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i].toString(), resultSet.getTime(COLUMNS[i]).toString());
             Assert.assertEquals(row[i].toString(), resultSet.getTime(j++).toString());
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i].toString(), resultSet.getTime(COLUMNS[i], Calendar.getInstance()).toString());
             Assert.assertEquals(row[i].toString(), resultSet.getTime(j++, Calendar.getInstance()).toString());
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getDouble(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getDouble(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getFloat(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getFloat(j++));
             // Disabled because precision issue
             // checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getShort(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getShort(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
             Assert.assertEquals(row[i], resultSet.getLong(COLUMNS[i]));
             Assert.assertEquals(row[i], resultSet.getLong(j++));
             checkColString(row[i], i, resultSet);
             checkWasNull(row[i], i++, resultSet);
+
+            //CLob
+            Clob clob = resultSet.getClob(COLUMNS[i]);
+            if (clob == null)
+                Assert.assertNull(row[i]);
+            else {
+                Assert.assertEquals(row[i], clob.getSubString(1, (int) clob.length()));
+                Assert.assertEquals(row[i], IOUtils.toString(clob.getCharacterStream(1, (int) clob.length())));
+                Assert.assertEquals(row[i], IOUtils.toString(clob.getCharacterStream()));
+                Assert.assertEquals(row[i], IOUtils.toString(clob.getAsciiStream(), Charset.defaultCharset()));
+            }
+            checkWasNull(row[i], i++, resultSet);
+
             count++;
         }
         Assert.assertEquals(rows.length, count);
@@ -191,7 +220,7 @@ public class DerbyTest {
     }
 
     @Test
-    public void test110TestSimpleStatement() throws SQLException {
+    public void test110TestSimpleStatement() throws SQLException, IOException {
         // First without the cache
         checkResultSet(executeQuery(cnxCacheDisable), ROWS);
         // Second the cache is written
@@ -209,7 +238,7 @@ public class DerbyTest {
     }
 
     @Test
-    public void test110TestUpdateAndGetResultSet() throws SQLException {
+    public void test110TestUpdateAndGetResultSet() throws SQLException, IOException {
         checkResultSet(updateGetResultSet(cnxCacheDisable), ROWS);
         checkResultSet(updateGetResultSet(cnxCacheEnable), ROWS);
         checkResultSet(updateGetResultSet(cnxCacheNoBackend), ROWS);
@@ -225,12 +254,12 @@ public class DerbyTest {
     }
 
     @Test
-    public void test110TestPreparedStatementWithoutCache() throws SQLException {
+    public void test110TestPreparedStatementWithoutCache() throws SQLException, IOException {
         checkResultSet(getPreparedStatement(cnxCacheDisable).executeQuery(), ROW1, ROW4);
     }
 
     @Test
-    public void test120TestPreparedStatementWithCache() throws SQLException {
+    public void test120TestPreparedStatementWithCache() throws SQLException, IOException {
         final PreparedStatement stmt = getPreparedStatement(cnxCacheEnable);
         // First the cache is written
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
@@ -239,13 +268,13 @@ public class DerbyTest {
     }
 
     @Test
-    public void test130TestPreparedStatementNoBackend() throws SQLException {
+    public void test130TestPreparedStatementNoBackend() throws SQLException, IOException {
         final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
     }
 
     @Test
-    public void test135TestPreparedStatementGetResultSet() throws SQLException {
+    public void test135TestPreparedStatementGetResultSet() throws SQLException, IOException {
         final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
         stmt.execute();
         checkResultSet(stmt.getResultSet(), ROW1, ROW4);
