@@ -32,7 +32,7 @@ class ResultSetCache {
     ResultSetCache(final Path cacheDirectory) throws SQLException {
         if (!Files.exists(cacheDirectory)) {
             try {
-                Files.createDirectory(cacheDirectory);
+                Files.createDirectories(cacheDirectory);
             } catch (IOException e) {
                 throw new SQLException(e);
             }
