@@ -69,7 +69,7 @@ public class Driver implements java.sql.Driver {
         // Check the cache directory
         final Path cacheDirectory = FileSystems.getDefault().getPath(url.substring(URL_PREFIX.length()));
         try {
-            if (Files.exists(cacheDirectory))
+            if (!Files.exists(cacheDirectory))
                 Files.createDirectories(cacheDirectory);
         } catch (IOException e) {
             throw new SQLException("Cannot create the cache directory: " + cacheDirectory);
