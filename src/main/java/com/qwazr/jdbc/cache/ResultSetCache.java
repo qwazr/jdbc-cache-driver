@@ -66,7 +66,8 @@ class ResultSetCache {
             try {
                 providedResultSet = resultSetProvider.provide();
                 ResultSetWriter.write(tempPath, providedResultSet);
-                Files.move(tempPath, resultSetPath, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(tempPath, resultSetPath, StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException e) {
                 throw new SQLException("Failed in renaming the file " + tempPath, e);
             } finally {
