@@ -19,6 +19,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -65,7 +66,8 @@ class ResultSetCache {
             try {
                 providedResultSet = resultSetProvider.provide();
                 ResultSetWriter.write(tempPath, providedResultSet);
-                Files.move(tempPath, resultSetPath);
+                Files.move(tempPath, resultSetPath, StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException e) {
                 throw new SQLException("Failed in renaming the file " + tempPath, e);
             } finally {

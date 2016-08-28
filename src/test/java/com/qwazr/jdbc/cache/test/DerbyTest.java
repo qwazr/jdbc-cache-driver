@@ -30,9 +30,16 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DerbyTest {
+
+    final static Logger LOGGER = Logger.getLogger(DerbyTest.class.getName());
 
     private static Connection cnxCacheDisable;
     private static Connection cnxCacheEnable;
@@ -262,23 +269,35 @@ public class DerbyTest {
         checkResultSet(updateGetResultSet(cnxCacheNoBackend), ROWS);
     }
 
-    final static String SQL_PREP = "SELECT * FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
+    final static String SQL_PREP_ARG = "SELECT * FROM FIRSTTABLE WHERE ID = ? OR ID = ?";
 
-    private PreparedStatement getPreparedStatement(Connection cnx) throws SQLException {
-        final PreparedStatement stmt = cnx.prepareStatement(SQL_PREP);
-        stmt.setInt(1, 10);
-        stmt.setInt(2, 40);
+    private PreparedStatement getPreparedStatement(Connection cnx, Object[] row1, Object[] row2) throws SQLException {
+        final PreparedStatement stmt = cnx.prepareStatement(SQL_PREP_ARG);
+        stmt.setInt(1, (int) row1[0]);
+        stmt.setInt(2, (int) row2[0]);
+        return stmt;
+    }
+
+    final static String SQL_PREP_NO_ARG = "SELECT * FROM FIRSTTABLE WHERE ID = " + ROW2[0];
+
+    private CallableStatement getCallableStatement(Connection cnx) throws SQLException {
+        final CallableStatement stmt = cnx.prepareCall(SQL_PREP_NO_ARG);
         return stmt;
     }
 
     @Test
     public void test110TestPreparedStatementWithoutCache() throws SQLException, IOException {
-        checkResultSet(getPreparedStatement(cnxCacheDisable).executeQuery(), ROW1, ROW4);
+        checkResultSet(getPreparedStatement(cnxCacheDisable, ROW1, ROW4).executeQuery(), ROW1, ROW4);
+    }
+
+    @Test
+    public void test110TestCallableStatementWithoutCache() throws SQLException, IOException {
+        checkResultSet(getCallableStatement(cnxCacheDisable).executeQuery(), ROW2);
     }
 
     @Test
     public void test120TestPreparedStatementWithCache() throws SQLException, IOException {
-        final PreparedStatement stmt = getPreparedStatement(cnxCacheEnable);
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheEnable, ROW1, ROW4);
         // First the cache is written
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
         // Second the cache is read
@@ -286,16 +305,75 @@ public class DerbyTest {
     }
 
     @Test
+    public void test120TestCallableStatementWithCache() throws SQLException, IOException {
+        final CallableStatement stmt = getCallableStatement(cnxCacheEnable);
+        // First the cache is written
+        checkResultSet(stmt.executeQuery(), ROW2);
+        // Second the cache is read
+        checkResultSet(stmt.executeQuery(), ROW2);
+    }
+
+    @Test
     public void test130TestPreparedStatementNoBackend() throws SQLException, IOException {
-        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend, ROW1, ROW4);
         checkResultSet(stmt.executeQuery(), ROW1, ROW4);
     }
 
     @Test
+    public void test130TestCallableStatementNoBackend() throws SQLException, IOException {
+        final PreparedStatement stmt = getCallableStatement(cnxCacheNoBackend);
+        checkResultSet(stmt.executeQuery(), ROW2);
+    }
+
+    @Test
     public void test135TestPreparedStatementGetResultSet() throws SQLException, IOException {
-        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend);
+        final PreparedStatement stmt = getPreparedStatement(cnxCacheNoBackend, ROW1, ROW4);
         stmt.execute();
         checkResultSet(stmt.getResultSet(), ROW1, ROW4);
+    }
+
+    @Test
+    public void test135TestCallableStatementGetResultSet() throws SQLException, IOException {
+        final CallableStatement stmt = getCallableStatement(cnxCacheEnable);
+        stmt.execute();
+        checkResultSet(stmt.getResultSet(), ROW2);
+    }
+
+    @Test
+    public void test500ThreadSafeTest() throws InterruptedException {
+        final ExecutorService executor = Executors.newFixedThreadPool(8);
+        final long exitTime = System.currentTimeMillis() + 10 * 1000;
+        final AtomicInteger count = new AtomicInteger();
+        try {
+            for (int i = 0; i < 4; i++) {
+                executor.submit(() -> {
+                    while (System.currentTimeMillis() < exitTime)
+                        try {
+                            test110TestPreparedStatementWithoutCache();
+                            test120TestPreparedStatementWithCache();
+                            count.incrementAndGet();
+                        } catch (SQLException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                });
+                executor.submit(() -> {
+                    while (System.currentTimeMillis() < exitTime)
+                        try {
+                            test110TestCallableStatementWithoutCache();
+                            test120TestCallableStatementWithCache();
+                            count.incrementAndGet();
+                        } catch (SQLException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                });
+            }
+            executor.shutdown();
+            executor.awaitTermination(1, TimeUnit.HOURS);
+            LOGGER.info("Iteration count: " + count.get());
+        } finally {
+            if (!executor.isShutdown())
+                executor.shutdownNow();
+        }
     }
 
 }
