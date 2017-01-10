@@ -15,7 +15,6 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
@@ -34,13 +33,11 @@ class CachedConnection implements Connection {
     private volatile String schema;
 
     private final Connection connection;
-    private final boolean active;
-    final ResultSetCache resultSetCache;
+    private final ResultSetCacheImpl resultSetCache;
 
-    CachedConnection(final Connection backendConnection, final Path cacheDirectory, final boolean active)
-            throws SQLException {
+    CachedConnection(final Connection backendConnection, final ResultSetCacheImpl resultSetCache) throws SQLException {
         this.connection = backendConnection;
-        this.resultSetCache = new ResultSetCache(cacheDirectory);
+        this.resultSetCache = resultSetCache;
         this.autocommit = false;
         this.closed = false;
         this.readOnly = false;
@@ -50,25 +47,28 @@ class CachedConnection implements Connection {
         this.holdability = 0;
         this.clientInfos = new Properties();
         this.schema = null;
-        this.active = active;
+    }
+
+    ResultSetCacheImpl getResultSetCache() {
+        return resultSetCache;
     }
 
     @Override
     public Statement createStatement() throws SQLException {
         final Statement statement = connection == null ? null : connection.createStatement();
-        return active ? new CachedStatement<>(this, statement) : statement;
+        return resultSetCache != null ? new CachedStatement<>(this, resultSetCache, statement) : statement;
     }
 
     @Override
     public PreparedStatement prepareStatement(final String sql) throws SQLException {
         final PreparedStatement statement = connection == null ? null : connection.prepareStatement(sql);
-        return active ? new CachedPreparedStatement<>(this, statement, sql) : statement;
+        return resultSetCache != null ? new CachedPreparedStatement<>(this, resultSetCache, statement, sql) : statement;
     }
 
     @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
         final CallableStatement statement = connection == null ? null : connection.prepareCall(sql);
-        return active ? new CachedCallableStatement(this, statement, sql) : statement;
+        return resultSetCache != null ? new CachedCallableStatement(this, resultSetCache, statement, sql) : statement;
     }
 
     @Override
@@ -174,7 +174,9 @@ class CachedConnection implements Connection {
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
         final Statement statement =
                 connection == null ? null : connection.createStatement(resultSetType, resultSetConcurrency);
-        return active ? new CachedStatement<>(this, statement, resultSetType, resultSetConcurrency, 0) : statement;
+        return resultSetCache != null ?
+                new CachedStatement<>(this, resultSetCache, statement, resultSetType, resultSetConcurrency, 0) :
+                statement;
     }
 
     @Override
@@ -182,8 +184,9 @@ class CachedConnection implements Connection {
             throws SQLException {
         final PreparedStatement statement =
                 connection == null ? null : connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
-        return active ?
-                new CachedPreparedStatement<>(this, statement, sql, resultSetType, resultSetConcurrency, 0) :
+        return resultSetCache != null ?
+                new CachedPreparedStatement<>(this, resultSetCache, statement, sql, resultSetType, resultSetConcurrency,
+                        0) :
                 statement;
     }
 
@@ -191,8 +194,9 @@ class CachedConnection implements Connection {
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
         final CallableStatement statement =
                 connection == null ? null : connection.prepareCall(sql, resultSetType, resultSetConcurrency);
-        return active ?
-                new CachedCallableStatement(this, statement, sql, resultSetType, resultSetConcurrency, 0) :
+        return resultSetCache != null ?
+                new CachedCallableStatement(this, resultSetCache, statement, sql, resultSetType, resultSetConcurrency,
+                        0) :
                 statement;
     }
 
@@ -258,8 +262,9 @@ class CachedConnection implements Connection {
         final Statement statement = connection == null ?
                 null :
                 connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-        return active ?
-                new CachedStatement<>(this, statement, resultSetType, resultSetConcurrency, resultSetHoldability) :
+        return resultSetCache != null ?
+                new CachedStatement<>(this, resultSetCache, statement, resultSetType, resultSetConcurrency,
+                        resultSetHoldability) :
                 statement;
     }
 
@@ -269,8 +274,8 @@ class CachedConnection implements Connection {
         final PreparedStatement statement = connection == null ?
                 null :
                 connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        return active ?
-                new CachedPreparedStatement<>(this, statement, sql, resultSetType, resultSetConcurrency,
+        return resultSetCache != null ?
+                new CachedPreparedStatement<>(this, resultSetCache, statement, sql, resultSetType, resultSetConcurrency,
                         resultSetHoldability) :
                 statement;
     }
@@ -281,8 +286,8 @@ class CachedConnection implements Connection {
         final CallableStatement statement = connection == null ?
                 null :
                 connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        return active ?
-                new CachedCallableStatement(this, statement, sql, resultSetType, resultSetConcurrency,
+        return resultSetCache != null ?
+                new CachedCallableStatement(this, resultSetCache, statement, sql, resultSetType, resultSetConcurrency,
                         resultSetHoldability) :
                 statement;
     }
@@ -291,19 +296,19 @@ class CachedConnection implements Connection {
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
         final PreparedStatement statement =
                 connection == null ? null : connection.prepareStatement(sql, autoGeneratedKeys);
-        return active ? new CachedPreparedStatement<>(this, statement, sql) : statement;
+        return resultSetCache != null ? new CachedPreparedStatement<>(this, resultSetCache, statement, sql) : statement;
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
         final PreparedStatement statement = connection == null ? null : connection.prepareStatement(sql, columnIndexes);
-        return active ? new CachedPreparedStatement<>(this, statement, sql) : statement;
+        return resultSetCache != null ? new CachedPreparedStatement<>(this, resultSetCache, statement, sql) : statement;
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
         final PreparedStatement statement = connection == null ? null : connection.prepareStatement(sql, columnNames);
-        return active ? new CachedPreparedStatement<>(this, statement, sql) : statement;
+        return resultSetCache != null ? new CachedPreparedStatement<>(this, resultSetCache, statement, sql) : statement;
     }
 
     @Override
@@ -442,4 +447,5 @@ class CachedConnection implements Connection {
         else
             throw new SQLFeatureNotSupportedException();
     }
+
 }

@@ -15,6 +15,27 @@
  */
 package com.qwazr.jdbc.cache;
 
-interface ResultSetCache {
+import java.io.IOException;
+import java.sql.SQLException;
 
+class CacheSQLException extends RuntimeException {
+
+    private final SQLException sqlException;
+
+    private CacheSQLException(SQLException sqlException) {
+        super(sqlException);
+        this.sqlException = sqlException;
+    }
+
+    SQLException getSQLException() {
+        return sqlException;
+    }
+
+    static CacheSQLException of(String msg, IOException e) {
+        return new CacheSQLException(new SQLException(msg, e));
+    }
+
+    static CacheSQLException of(String msg) {
+        return new CacheSQLException(new SQLException(msg));
+    }
 }

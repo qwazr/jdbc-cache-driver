@@ -28,21 +28,34 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     protected final SortedMap<Integer, Object> parameters;
 
-    CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql,
-            final int resultSetConcurrency, final int resultSetType, final int resultSetHoldability) {
-        super(connection, backendStatement, resultSetConcurrency, resultSetType, resultSetHoldability);
+    CachedPreparedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+            final T backendStatement, final String sql, final int resultSetConcurrency, final int resultSetType,
+            final int resultSetHoldability) {
+        super(connection, resultSetCache, backendStatement, resultSetConcurrency, resultSetType, resultSetHoldability);
         this.parameters = new TreeMap<>();
         this.executedSql = sql;
     }
 
-    CachedPreparedStatement(final CachedConnection connection, final T backendStatement, final String sql) {
-        this(connection, backendStatement, sql, 0, 0, 0);
+    CachedPreparedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+            final T backendStatement, final String sql) {
+        this(connection, resultSetCache, backendStatement, sql, 0, 0, 0);
+    }
+
+    @Override
+    protected void generateKey() throws SQLException {
+        final StringBuilder sb = new StringBuilder(executedSql);
+        parameters.forEach((index, value) -> {
+            sb.append('•');
+            sb.append(index);
+            sb.append(value.toString());
+        });
+        generatedKey = generateCacheKey(sb.toString());
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        final String cacheKey = ResultSetCache.getKey(executedSql, parameters);
-        return connection.resultSetCache.get(this, cacheKey, () -> backendStatement.executeQuery());
+        generateKey();
+        return resultSetCache.get(this, generatedKey, () -> backendStatement.executeQuery());
     }
 
     @Override
@@ -51,13 +64,6 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
             return backendStatement.executeUpdate();
         else
             throw new SQLFeatureNotSupportedException();
-    }
-
-    @Override
-    public ResultSet getResultSet() throws SQLException {
-        final String cacheKey = ResultSetCache.getKey(executedSql, parameters);
-        return connection.resultSetCache
-                .get(this, cacheKey, backendStatement == null ? null : backendStatement::getResultSet);
     }
 
     @Override
@@ -206,7 +212,8 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public boolean execute() throws SQLException {
-        if (connection.resultSetCache.checkIfExists(ResultSetCache.getKey(executedSql, parameters)))
+        generateKey();
+        if (resultSetCache.checkIfExists(generatedKey))
             return true;
         if (backendStatement != null)
             return backendStatement.execute();

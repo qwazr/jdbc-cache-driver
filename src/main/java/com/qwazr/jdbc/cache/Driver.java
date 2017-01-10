@@ -15,12 +15,15 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +43,8 @@ public class Driver implements java.sql.Driver {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
     }
+
+    private final ConcurrentHashMap<Path, ResultSetCacheImpl> resultSetCacheMap = new ConcurrentHashMap<>();
 
     public Connection connect(String url, Properties info) throws SQLException {
 
@@ -66,16 +71,21 @@ public class Driver implements java.sql.Driver {
         if (url.length() <= URL_PREFIX.length())
             throw new SQLException("The path is empty: " + url);
 
+        if (!active)
+            return new CachedConnection(backendConnection, null);
+
         // Check the cache directory
         final Path cacheDirectory = FileSystems.getDefault().getPath(url.substring(URL_PREFIX.length()));
+
+        final ResultSetCacheImpl resultSetCache;
+
         try {
-            if (!Files.exists(cacheDirectory))
-                Files.createDirectories(cacheDirectory);
-        } catch (IOException e) {
-            throw new SQLException("Cannot create the cache directory: " + cacheDirectory);
+            resultSetCache = resultSetCacheMap.computeIfAbsent(cacheDirectory, ResultSetCacheImpl::new);
+        } catch (CacheSQLException e) {
+            throw e.getSQLException();
         }
 
-        return new CachedConnection(backendConnection, cacheDirectory, active);
+        return new CachedConnection(backendConnection, resultSetCache);
     }
 
     public boolean acceptsURL(String url) throws SQLException {
@@ -92,7 +102,7 @@ public class Driver implements java.sql.Driver {
     }
 
     public int getMinorVersion() {
-        return 0;
+        return 2;
     }
 
     public boolean jdbcCompliant() {
@@ -101,6 +111,12 @@ public class Driver implements java.sql.Driver {
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return LOGGER;
+    }
+
+    public static ResultSetCache getCache(final Connection connection) throws SQLException {
+        if (!(connection instanceof CachedConnection))
+            throw new SQLException("The connection is not a cached connection");
+        return ((CachedConnection) connection).getResultSetCache();
     }
 
 }
