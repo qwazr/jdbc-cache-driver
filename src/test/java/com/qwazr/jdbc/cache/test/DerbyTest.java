@@ -39,6 +39,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -451,8 +452,54 @@ public class DerbyTest {
         }
     }
 
+    private interface RunnableEx {
+
+        void run() throws SQLException;
+    }
+
+    private void checkNotSupported(RunnableEx runnable) throws SQLException {
+        try {
+            runnable.run();
+            Assert.fail("SQLFeatureNotSupportedException not thrown");
+        } catch (SQLFeatureNotSupportedException e) {
+        }
+    }
+
     @Test
-    public void test550TestCache() throws SQLException {
+    public void test800ResultSetNotSupportedMethod() throws SQLException {
+        ResultSet resultSet = getPreparedStatement(cnxCacheEnable, ROW1, ROW4).executeQuery();
+        checkNotSupported(() -> resultSet.updateArray(1, null));
+        checkNotSupported(() -> resultSet.updateArray("id", null));
+        checkNotSupported(() -> resultSet.updateAsciiStream(1, null));
+        checkNotSupported(() -> resultSet.updateAsciiStream("id", null));
+        checkNotSupported(() -> resultSet.updateBigDecimal(1, null));
+        checkNotSupported(() -> resultSet.updateBigDecimal("id", null));
+        checkNotSupported(() -> resultSet.updateByte(1, (byte) 0));
+        checkNotSupported(() -> resultSet.updateByte("id", (byte) 0));
+        checkNotSupported(() -> resultSet.updateBytes(1, null));
+        checkNotSupported(() -> resultSet.updateBytes("id", null));
+        checkNotSupported(() -> resultSet.updateBoolean(1, false));
+        checkNotSupported(() -> resultSet.updateBoolean("id", false));
+        checkNotSupported(() -> resultSet.updateDate(1, null));
+        checkNotSupported(() -> resultSet.updateDate("id", null));
+        checkNotSupported(() -> resultSet.updateDouble(1, 0d));
+        checkNotSupported(() -> resultSet.updateDouble("id", 0d));
+        checkNotSupported(() -> resultSet.updateFloat(1, 0f));
+        checkNotSupported(() -> resultSet.updateFloat("id", 0f));
+        checkNotSupported(() -> resultSet.updateInt(1, 0));
+        checkNotSupported(() -> resultSet.updateInt("id", 0));
+        checkNotSupported(() -> resultSet.updateLong(1, 0));
+        checkNotSupported(() -> resultSet.updateLong("id", 0));
+        checkNotSupported(() -> resultSet.updateRowId(1, null));
+        checkNotSupported(() -> resultSet.updateRowId("id", null));
+        checkNotSupported(() -> resultSet.updateNull(1));
+        checkNotSupported(() -> resultSet.updateNull("id"));
+        checkNotSupported(() -> resultSet.updateObject(1, null));
+        checkNotSupported(() -> resultSet.updateObject("id", null));
+    }
+
+    @Test
+    public void test900TestCacheAPI() throws SQLException {
         ResultSetCache cache = com.qwazr.jdbc.cache.Driver.getCache(cnxCacheEnable);
         Assert.assertNotNull(cache);
         Assert.assertEquals(3, cache.size());
