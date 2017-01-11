@@ -15,6 +15,7 @@
  */
 package com.qwazr.jdbc.cache.test;
 
+import com.qwazr.jdbc.cache.ResultSetCache;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -448,6 +449,26 @@ public class DerbyTest {
                 Assert.assertEquals(ResultSetMetaData.columnNullable, metaData.isNullable(i));
             }
         }
+    }
+
+    @Test
+    public void test550TestCache() throws SQLException {
+        ResultSetCache cache = com.qwazr.jdbc.cache.Driver.getCache(cnxCacheEnable);
+        Assert.assertNotNull(cache);
+        Assert.assertEquals(3, cache.size());
+
+        Assert.assertEquals(0, cache.active());
+
+        Statement stmt = getPreparedStatement(cnxCacheEnable, ROW1, ROW4);
+        Assert.assertTrue(cache.exists(stmt));
+
+        Assert.assertFalse(cache.active(stmt));
+
+        cache.flush(stmt);
+        Assert.assertEquals(2, cache.size());
+
+        cache.flush();
+        Assert.assertEquals(0, cache.size());
     }
 
 }

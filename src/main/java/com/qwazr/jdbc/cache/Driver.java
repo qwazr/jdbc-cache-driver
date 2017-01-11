@@ -81,7 +81,7 @@ public class Driver implements java.sql.Driver {
 
         try {
             resultSetCache = resultSetCacheMap.computeIfAbsent(cacheDirectory, ResultSetCacheImpl::new);
-        } catch (CacheSQLException e) {
+        } catch (CacheException e) {
             throw e.getSQLException();
         }
 

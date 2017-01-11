@@ -21,9 +21,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 class ResultSetCacheImpl implements ResultSetCache {
 
@@ -35,11 +39,11 @@ class ResultSetCacheImpl implements ResultSetCache {
             try {
                 Files.createDirectories(cacheDirectory);
             } catch (IOException e) {
-                throw CacheSQLException.of("Cannot create the cache directory: " + cacheDirectory, e);
+                throw CacheException.of("Cannot create the cache directory: " + cacheDirectory, e);
             }
         }
         if (!Files.isDirectory(cacheDirectory))
-            throw CacheSQLException
+            throw CacheException
                     .of("The path is not a directory, or the directory cannot be created: " + cacheDirectory);
         this.cacheDirectory = cacheDirectory;
         this.activeKeys = new ConcurrentHashMap<>();
@@ -107,6 +111,85 @@ class ResultSetCacheImpl implements ResultSetCache {
     final boolean checkIfExists(final String key) {
         final Path resultSetPath = cacheDirectory.resolve(key);
         return Files.exists(resultSetPath);
+    }
+
+    private void parse(final Consumer<Path> consumer) throws SQLException {
+        try {
+            synchronized (cacheDirectory) {
+                Files.list(cacheDirectory).forEach(path -> {
+                    if (!path.endsWith(".tmp"))
+                        consumer.accept(path);
+                });
+            }
+        } catch (CacheException e) {
+            throw e.getSQLException();
+        } catch (IOException e) {
+            throw CacheException.of(e).getSQLException();
+        }
+    }
+
+    @Override
+    public void flush() throws SQLException {
+        parse(path -> {
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                throw CacheException.of(e);
+            }
+        });
+    }
+
+    private Path checkCacheDirectory() {
+        return Objects.requireNonNull(cacheDirectory, "No cache directory");
+    }
+
+    private ConcurrentHashMap<String, ReentrantLock> checkCacheMap() {
+        return Objects.requireNonNull(activeKeys, "No cache");
+    }
+
+    private CachedStatement checkCachedStatement(final Statement stmt) throws SQLException {
+        Objects.requireNonNull(stmt, "The statement is null");
+        if (stmt instanceof CachedStatement)
+            return (CachedStatement) stmt;
+        throw new SQLException("The statement is not cached");
+    }
+
+    private String checkKey(final Statement stmt) throws SQLException {
+        return Objects.requireNonNull(checkCachedStatement(stmt).getOrGenerateKey(), "No key found");
+    }
+
+    @Override
+    public void flush(final Statement stmt) throws SQLException {
+        try {
+            Files.deleteIfExists(cacheDirectory.resolve(checkKey(stmt)));
+        } catch (IOException e) {
+            throw CacheException.of(e);
+        }
+    }
+
+    @Override
+    public int size() throws SQLException {
+        final AtomicInteger counter = new AtomicInteger();
+        parse(path -> {
+            if (!path.endsWith(".tmp"))
+                counter.incrementAndGet();
+        });
+        return counter.get();
+    }
+
+    @Override
+    public boolean exists(Statement stmt) throws SQLException {
+        return Files.exists(checkCacheDirectory().resolve(checkKey(stmt)));
+    }
+
+    @Override
+    public int active() {
+        return checkCacheMap().size();
+    }
+
+    @Override
+    public boolean active(Statement stmt) throws SQLException {
+        return checkCacheMap().containsKey(checkKey(stmt));
     }
 
     interface Provider {

@@ -159,34 +159,22 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setTimestamp(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setTimestamp(parameterIndex, x);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setAsciiStream(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setAsciiStream(parameterIndex, x);
     }
 
     @Override
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setUnicodeStream(parameterIndex, x, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setUnicodeStream(parameterIndex, x, length);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBinaryStream(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBinaryStream(parameterIndex, x);
     }
 
     @Override
@@ -215,66 +203,42 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
         generateKey();
         if (resultSetCache.checkIfExists(generatedKey))
             return true;
-        if (backendStatement != null)
-            return backendStatement.execute();
-        else
-            throw new SQLException("No cache entry");
+        return checkBackendStatement("No cache entry").execute();
     }
 
     @Override
     public void addBatch() throws SQLException {
-        if (backendStatement != null)
-            backendStatement.addBatch();
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().addBatch();
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setCharacterStream(parameterIndex, reader, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setCharacterStream(parameterIndex, reader, length);
     }
 
     @Override
     public void setRef(int parameterIndex, Ref x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setRef(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setRef(parameterIndex, x);
     }
 
     @Override
     public void setBlob(int parameterIndex, Blob x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBlob(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBlob(parameterIndex, x);
     }
 
     @Override
     public void setClob(int parameterIndex, Clob x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setClob(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setClob(parameterIndex, x);
     }
 
     @Override
     public void setArray(int parameterIndex, Array x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setArray(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setArray(parameterIndex, x);
     }
 
     @Override
     public ResultSetMetaData getMetaData() throws SQLException {
-        if (backendStatement != null)
-            return backendStatement.getMetaData();
-        else
-            throw new SQLFeatureNotSupportedException();
+        return checkBackendStatement().getMetaData();
     }
 
     @Override
@@ -314,10 +278,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
-        if (backendStatement != null)
-            return backendStatement.getParameterMetaData();
-        else
-            throw new SQLFeatureNotSupportedException();
+        return checkBackendStatement().getParameterMetaData();
     }
 
     @Override
@@ -336,137 +297,86 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     @Override
     public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setNCharacterStream(parameterIndex, value, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setNCharacterStream(parameterIndex, value, length);
     }
 
     @Override
     public void setNClob(int parameterIndex, NClob value) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setNClob(parameterIndex, value);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setNClob(parameterIndex, value);
     }
 
     @Override
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setClob(parameterIndex, reader, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setClob(parameterIndex, reader, length);
     }
 
     @Override
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBlob(parameterIndex, inputStream, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBlob(parameterIndex, inputStream, length);
     }
 
     @Override
     public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setNClob(parameterIndex, reader, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setNClob(parameterIndex, reader, length);
     }
 
     @Override
     public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setSQLXML(parameterIndex, xmlObject);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setSQLXML(parameterIndex, xmlObject);
     }
 
     @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setObject(parameterIndex, targetSqlType, scaleOrLength);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setObject(parameterIndex, targetSqlType, scaleOrLength);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setAsciiStream(parameterIndex, x, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setAsciiStream(parameterIndex, x, length);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBinaryStream(parameterIndex, x, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBinaryStream(parameterIndex, x, length);
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setCharacterStream(parameterIndex, reader, length);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setCharacterStream(parameterIndex, reader, length);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setAsciiStream(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setAsciiStream(parameterIndex, x);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBinaryStream(parameterIndex, x);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBinaryStream(parameterIndex, x);
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setCharacterStream(parameterIndex, reader);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setCharacterStream(parameterIndex, reader);
     }
 
     @Override
     public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setNCharacterStream(parameterIndex, value);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setNCharacterStream(parameterIndex, value);
     }
 
     @Override
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setClob(parameterIndex, reader);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setClob(parameterIndex, reader);
     }
 
     @Override
     public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setBlob(parameterIndex, inputStream);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setBlob(parameterIndex, inputStream);
     }
 
     @Override
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
-        if (backendStatement != null)
-            backendStatement.setNClob(parameterIndex, reader);
-        else
-            throw new SQLFeatureNotSupportedException();
+        checkBackendStatement().setNClob(parameterIndex, reader);
     }
 }

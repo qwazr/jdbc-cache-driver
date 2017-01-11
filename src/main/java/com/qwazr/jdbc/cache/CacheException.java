@@ -18,24 +18,29 @@ package com.qwazr.jdbc.cache;
 import java.io.IOException;
 import java.sql.SQLException;
 
-class CacheSQLException extends RuntimeException {
+class CacheException extends RuntimeException {
 
-    private final SQLException sqlException;
+    private final SQLException exception;
 
-    private CacheSQLException(SQLException sqlException) {
-        super(sqlException);
-        this.sqlException = sqlException;
+    private CacheException(SQLException exception) {
+        super(exception);
+        this.exception = exception;
     }
 
     SQLException getSQLException() {
-        return sqlException;
+        return exception;
     }
 
-    static CacheSQLException of(String msg, IOException e) {
-        return new CacheSQLException(new SQLException(msg, e));
+    static CacheException of(IOException e) {
+        return new CacheException(new SQLException("IO exception in the SQL cache", e));
     }
 
-    static CacheSQLException of(String msg) {
-        return new CacheSQLException(new SQLException(msg));
+    static CacheException of(String msg, IOException e) {
+        return new CacheException(new SQLException(msg, e));
     }
+
+    static CacheException of(String msg) {
+        return new CacheException(new SQLException(msg));
+    }
+
 }

@@ -15,6 +15,47 @@
  */
 package com.qwazr.jdbc.cache;
 
-interface ResultSetCache {
+import java.sql.SQLException;
+import java.sql.Statement;
 
+public interface ResultSetCache {
+
+    /**
+     * Flush all entries in the cache
+     *
+     * @throws SQLException
+     */
+    void flush() throws SQLException;
+
+    /**
+     * Remove any cache entry for the given statement.
+     *
+     * @param stmt the statement to flush
+     */
+    void flush(Statement stmt) throws SQLException;
+
+    /**
+     * @return the number of entries in the cache
+     * @throws SQLException
+     */
+    int size() throws SQLException;
+
+    /**
+     * Check if the cache contains an entry for this statement.
+     *
+     * @param stmt the statement to check
+     * @return true if a cache entry exists
+     */
+    boolean exists(Statement stmt) throws SQLException;
+
+    /**
+     * @return the number of cache entry build currently in progress
+     */
+    int active();
+
+    /**
+     * @param stmt the statement to flush
+     * @return true if a cache entry is currently build for the given statement
+     */
+    boolean active(Statement stmt) throws SQLException;
 }
