@@ -20,23 +20,11 @@ Usage
 
 The library is available on Maven Central.
 
-The last release:
-
 ```xml
 <dependency>
   <groupId>com.qwazr</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.1</version>
-</dependency>
-```
-
-The current Snapshot:
-
-```xml
-<dependency>
-  <groupId>com.qwazr</groupId>
-  <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
 </dependency>
 ```
 
