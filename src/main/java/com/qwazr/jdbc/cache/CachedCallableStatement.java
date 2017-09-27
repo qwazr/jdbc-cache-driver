@@ -1,5 +1,5 @@
-/**
- * Copyright 2016 Emmanuel Keller / QWAZR
+/*
+ * Copyright 2016-2017 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.TreeMap;
 
 class CachedCallableStatement extends CachedPreparedStatement<CallableStatement> implements CallableStatement {
 
-    protected final SortedMap<String, Object> namedParameters;
+    private final SortedMap<String, Object> namedParameters;
 
     CachedCallableStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
             final CallableStatement backendStatement, final String sql, final int resultSetConcurrency,
@@ -122,9 +122,10 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
     }
 
     @Override
+    @Deprecated
     public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
         if (backendStatement != null)
-            return backendStatement.getBigDecimal(parameterIndex);
+            return backendStatement.getBigDecimal(parameterIndex, scale);
         else
             return (BigDecimal) parameters.get(parameterIndex);
     }
@@ -832,7 +833,7 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
         if (backendStatement != null)
             return backendStatement.getObject(parameterIndex, type);
         else
-            return (T) parameters.get(parameterIndex);
+            return type.cast(parameters.get(parameterIndex));
     }
 
     @Override
@@ -840,6 +841,6 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
         if (backendStatement != null)
             return backendStatement.getObject(parameterName, type);
         else
-            return (T) namedParameters.get(parameterName);
+            return type.cast(namedParameters.get(parameterName));
     }
 }

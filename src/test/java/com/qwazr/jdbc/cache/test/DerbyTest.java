@@ -76,7 +76,7 @@ public class DerbyTest {
         Driver driver = DriverManager.getDriver(jdbcCacheUrl);
         Assert.assertNotNull(driver);
         Assert.assertEquals(1, driver.getMajorVersion());
-        Assert.assertEquals(2, driver.getMinorVersion());
+        Assert.assertEquals(3, driver.getMinorVersion());
         Assert.assertNotNull(driver.getParentLogger());
         Assert.assertFalse(driver.jdbcCompliant());
         DriverPropertyInfo[] infos = driver.getPropertyInfo(null, null);

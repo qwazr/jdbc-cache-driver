@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,7 +62,7 @@ public class Driver implements java.sql.Driver {
         }
 
         final String cacheDriverActive = info.getProperty(CACHE_DRIVER_ACTIVE);
-        final boolean active = cacheDriverActive == null ? true : Boolean.parseBoolean(cacheDriverActive);
+        final boolean active = cacheDriverActive == null || Boolean.parseBoolean(cacheDriverActive);
 
         final Connection backendConnection = cacheDriverUrl == null || cacheDriverUrl.isEmpty() ?
                 null :
@@ -102,7 +102,7 @@ public class Driver implements java.sql.Driver {
     }
 
     public int getMinorVersion() {
-        return 2;
+        return 3;
     }
 
     public boolean jdbcCompliant() {

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ import java.util.zip.GZIPOutputStream;
 
 class ResultSetWriter {
 
-    final static void write(final Path resultSetPath, final ResultSet resultSet) throws SQLException {
+    static void write(final Path resultSetPath, final ResultSet resultSet) throws SQLException {
         try (final FileOutputStream fos = new FileOutputStream(resultSetPath.toFile())) {
             try (final GZIPOutputStream zos = new GZIPOutputStream(fos)) {
                 try (final DataOutputStream output = new DataOutputStream(zos)) {
@@ -65,7 +65,7 @@ class ResultSetWriter {
 
     }
 
-    final static ColumnDef[] readColumns(final DataInputStream input) throws IOException {
+    static ColumnDef[] readColumns(final DataInputStream input) throws IOException {
         final int columnCount = input.readInt();
         final ColumnDef[] columns = new ColumnDef[columnCount];
         for (int i = 0; i < columnCount; i++)

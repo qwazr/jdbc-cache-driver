@@ -1,5 +1,5 @@
-/**
- * Copyright 2016 Emmanuel Keller / QWAZR
+/*
+ * Copyright 2016-2017 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.TreeMap;
 
 class CachedPreparedStatement<T extends PreparedStatement> extends CachedStatement<T> implements PreparedStatement {
 
-    protected final SortedMap<Integer, Object> parameters;
+    final SortedMap<Integer, Object> parameters;
 
     CachedPreparedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
             final T backendStatement, final String sql, final int resultSetConcurrency, final int resultSetType,
@@ -55,7 +55,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
     @Override
     public ResultSet executeQuery() throws SQLException {
         generateKey();
-        return resultSetCache.get(this, generatedKey, () -> backendStatement.executeQuery());
+        return resultSetCache.get(this, generatedKey, backendStatement != null ? backendStatement::executeQuery : null);
     }
 
     @Override
@@ -168,6 +168,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
     }
 
     @Override
+    @Deprecated
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         checkBackendStatement().setUnicodeStream(parameterIndex, x, length);
     }
@@ -201,9 +202,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
     @Override
     public boolean execute() throws SQLException {
         generateKey();
-        if (resultSetCache.checkIfExists(generatedKey))
-            return true;
-        return checkBackendStatement("No cache entry").execute();
+        return resultSetCache.checkIfExists(generatedKey) || checkBackendStatement("No cache entry").execute();
     }
 
     @Override

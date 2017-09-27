@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ public interface ResultSetCache {
     /**
      * Flush all entries in the cache
      *
-     * @throws SQLException
+     * @throws SQLException if any SQL error occurs
      */
     void flush() throws SQLException;
 
@@ -36,7 +36,7 @@ public interface ResultSetCache {
 
     /**
      * @return the number of entries in the cache
-     * @throws SQLException
+     * @throws SQLException if any SQL error occurs
      */
     int size() throws SQLException;
 
