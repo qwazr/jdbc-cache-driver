@@ -28,7 +28,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
 
     final SortedMap<Integer, Object> parameters;
 
-    CachedPreparedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedPreparedStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final T backendStatement, final String sql, final int resultSetConcurrency, final int resultSetType,
             final int resultSetHoldability) {
         super(connection, resultSetCache, backendStatement, resultSetConcurrency, resultSetType, resultSetHoldability);
@@ -36,7 +36,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
         this.executedSql = sql;
     }
 
-    CachedPreparedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedPreparedStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final T backendStatement, final String sql) {
         this(connection, resultSetCache, backendStatement, sql, 0, 0, 0);
     }
@@ -55,7 +55,7 @@ class CachedPreparedStatement<T extends PreparedStatement> extends CachedStateme
     @Override
     public ResultSet executeQuery() throws SQLException {
         generateKey();
-        return resultSetCache.get(this, generatedKey, backendStatement != null ? backendStatement::executeQuery : null);
+        return resultSetCache.get(this, generatedKey, backendStatement != null ? () -> backendStatement.executeQuery() : null);
     }
 
     @Override

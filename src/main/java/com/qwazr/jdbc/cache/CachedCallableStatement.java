@@ -29,7 +29,7 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
 
     private final SortedMap<String, Object> namedParameters;
 
-    CachedCallableStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedCallableStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final CallableStatement backendStatement, final String sql, final int resultSetConcurrency,
             final int resultSetType, final int resultSetHoldability) {
         super(connection, resultSetCache, backendStatement, sql, resultSetConcurrency, resultSetType,
@@ -37,7 +37,7 @@ class CachedCallableStatement extends CachedPreparedStatement<CallableStatement>
         this.namedParameters = new TreeMap<>();
     }
 
-    CachedCallableStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedCallableStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final CallableStatement backendStatement, final String sql) {
         this(connection, resultSetCache, backendStatement, sql, 0, 0, 0);
     }

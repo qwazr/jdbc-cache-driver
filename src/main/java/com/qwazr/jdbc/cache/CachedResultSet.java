@@ -15,20 +15,40 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Date;
+import java.sql.NClob;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
-class CachedResultSet implements ResultSet {
+/**
+ * Cached ResultSet
+ */
+abstract class CachedResultSet implements ResultSet {
 
     private final CachedStatement statement;
     private final DataInputStream input;
@@ -41,17 +61,13 @@ class CachedResultSet implements ResultSet {
     private volatile int nextPos;
     private volatile boolean closed;
 
-    CachedResultSet(final CachedStatement statement, final Path resultSetPath) throws SQLException {
+    CachedResultSet(final CachedStatement statement, DataInputStream input) throws SQLException {
         this.statement = statement;
         this.wasNull = false;
         this.currentPos = 0;
         this.nextPos = 0;
         this.closed = false;
-        try {
-            this.input = new DataInputStream(new GZIPInputStream(new FileInputStream(resultSetPath.toFile())));
-        } catch (IOException e) {
-            throw new SQLException("Error while opening the file " + resultSetPath, e);
-        }
+        this.input = input;
         try {
             this.metaData = new CachedResultSetMetaData(ResultSetWriter.readColumns(input));
             this.currentRow = new Object[metaData.columns.length];
@@ -67,7 +83,7 @@ class CachedResultSet implements ResultSet {
             } catch (Exception ex) {
                 //Close quietly
             }
-            throw new SQLException("Cannot read the cache: " + resultSetPath, e);
+            throw new SQLException("Cannot read the cache for statement " + statement, e);
         }
     }
 

@@ -16,6 +16,7 @@
 package com.qwazr.jdbc.cache;
 
 import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -28,7 +29,7 @@ import java.sql.Statement;
 class CachedStatement<T extends Statement> implements Statement {
 
     private final CachedConnection connection;
-    final ResultSetCacheImpl resultSetCache;
+    final ResultSetCache resultSetCache;
     final T backendStatement;
 
     private final int resultSetConcurrency;
@@ -47,7 +48,7 @@ class CachedStatement<T extends Statement> implements Statement {
     volatile String executedSql;
     volatile String generatedKey;
 
-    CachedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final T backendStatement, final int resultSetConcurrency, final int resultSetType,
             final int resultSetHoldability) {
         this.connection = connection;
@@ -67,7 +68,7 @@ class CachedStatement<T extends Statement> implements Statement {
         this.executedSql = null;
     }
 
-    CachedStatement(final CachedConnection connection, final ResultSetCacheImpl resultSetCache,
+    CachedStatement(final CachedConnection connection, final ResultSetCache resultSetCache,
             final T backendStatement) {
         this(connection, resultSetCache, backendStatement, 0, 0, 0);
     }
