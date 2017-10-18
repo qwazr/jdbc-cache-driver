@@ -15,6 +15,8 @@
  */
 package com.qwazr.jdbc.cache;
 
+import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -58,4 +60,12 @@ public interface ResultSetCache {
      * @return true if a cache entry is currently build for the given statement
      */
     boolean active(Statement stmt) throws SQLException;
+
+    <T extends Statement> ResultSet get(CachedStatement statement, String key, Provider s) throws SQLException;
+
+    boolean checkIfExists(String key);
+
+    interface Provider {
+        ResultSet provide() throws SQLException, IOException;
+    }
 }

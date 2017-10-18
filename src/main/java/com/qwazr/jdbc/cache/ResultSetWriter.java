@@ -36,6 +36,18 @@ class ResultSetWriter {
         }
     }
 
+    static ByteArrayOutputStream write(final ResultSet resultSet) throws SQLException {
+        try (final ByteArrayOutputStream fos = new ByteArrayOutputStream()) {
+            try (final DataOutputStream output = new DataOutputStream(fos)) {
+                writeMetadata(output, resultSet.getMetaData());
+                writeResultSet(output, resultSet);
+                return fos;
+            }
+        } catch (IOException e) {
+            throw new SQLException("Error while writing the ResultSet cache", e);
+        }
+    }
+
     private static void writeMetadata(final DataOutputStream output, final ResultSetMetaData metadata)
             throws IOException, SQLException {
         final int columnCount = metadata.getColumnCount();

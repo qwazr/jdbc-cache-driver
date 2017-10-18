@@ -33,9 +33,9 @@ class CachedConnection implements Connection {
     private volatile String schema;
 
     private final Connection connection;
-    private final ResultSetCacheImpl resultSetCache;
+    private final ResultSetCache resultSetCache;
 
-    CachedConnection(final Connection backendConnection, final ResultSetCacheImpl resultSetCache) throws SQLException {
+    CachedConnection(final Connection backendConnection, final ResultSetCache resultSetCache) throws SQLException {
         this.connection = backendConnection;
         this.resultSetCache = resultSetCache;
         this.autocommit = false;
@@ -49,7 +49,7 @@ class CachedConnection implements Connection {
         this.schema = null;
     }
 
-    ResultSetCacheImpl getResultSetCache() {
+    ResultSetCache getResultSetCache() {
         return resultSetCache;
     }
 

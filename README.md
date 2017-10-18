@@ -6,7 +6,7 @@
 [![Javadocs](http://www.javadoc.io/badge/com.qwazr/jdbc-cache-driver.svg)](http://www.javadoc.io/doc/com.qwazr/jdbc-cache-driver)
 [![Coverage Status](https://coveralls.io/repos/github/qwazr/jdbc-cache-driver/badge.svg?branch=master)](https://coveralls.io/github/qwazr/jdbc-cache-driver?branch=master)
 
-JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files.
+JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files or in memory.
 The same query requested again will be read from the file, the database is no more requested again.
 
 You may use it to easily mock ResultSets from a database.
@@ -42,17 +42,29 @@ Class.forName("com.qwazr.jdbc.cache.Driver");
 Properties info = new Properties();
 info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
 info.setProperty("cache.driver.class", "org.apache.derby.jdbc.EmbeddedDriver");
+```
 
+Use the file cache implementation:
+
+```java
 // Get your JDBC connection
 Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
+```
+
+Or use the in memory cache implementation:
+
+```java
+// Get your JDBC connection
+Connection cnx = DriverManager.getConnection("jdbc:cache:mem:my-memory-cache", info);
 ```
 
 To build a connection you have to provide the URL and some properties.
 The URL tells the driver where to store the cached ResultSet.
 
-The syntax of the URL is:
+The syntax of the URL can be:
 
-*jdbc:cache:file:{path-to-the-cache-directory}*
+* *jdbc:cache:file:{path-to-the-cache-directory}* for on disk cache
+* *jdbc:cache:mem:{name-of-the-cache}* for in memory cache
 
 Two possible properties:
 - **cache.driver.url** contains the typical JDBC URL of the backend driver.

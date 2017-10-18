@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.qwazr.jdbc.cache.test;
+package com.qwazr.jdbc.cache;
 
-import com.qwazr.jdbc.cache.ResultSetCache;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -52,28 +51,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DerbyTest {
+abstract public class DerbyTest {
 
-    final static Logger LOGGER = Logger.getLogger(DerbyTest.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(DerbyTest.class.getName());
 
     private static Connection cnxCacheDisable;
     private static Connection cnxCacheEnable;
     private static Connection cnxCacheNoBackend;
 
-    private static String jdbcCacheUrl;
+    abstract Class<? extends ResultSet> expectedResultSetClass();
+    abstract String getOrSetJdbcCacheUrl();
+    abstract String getDerbyDbName();
 
     @BeforeClass
     public static void init() throws ClassNotFoundException, IOException {
         Class.forName("com.qwazr.jdbc.cache.Driver");
-        String tempDirPath = Files.createTempDirectory("jdbc-cache-test").toUri().getPath();
-        if (tempDirPath.contains(":") && tempDirPath.startsWith("/"))
-            tempDirPath = tempDirPath.substring(1);
-        jdbcCacheUrl = "jdbc:cache:file:" + tempDirPath + File.separatorChar + "cache";
     }
 
     @Test
     public void test000testDriver() throws SQLException {
-        Driver driver = DriverManager.getDriver(jdbcCacheUrl);
+        Driver driver = DriverManager.getDriver(getOrSetJdbcCacheUrl());
         Assert.assertNotNull(driver);
         Assert.assertEquals(1, driver.getMajorVersion());
         Assert.assertEquals(3, driver.getMinorVersion());
@@ -90,24 +87,24 @@ public class DerbyTest {
     @Test
     public void test001initConnectionWithoutCache() throws SQLException, IOException, ClassNotFoundException {
         final Properties info = new Properties();
-        info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
+        info.setProperty("cache.driver.url", "jdbc:derby:memory:" + getDerbyDbName() + ";create=true");
         info.setProperty("cache.driver.class", "org.apache.derby.jdbc.EmbeddedDriver");
         info.setProperty("cache.driver.active", "false");
-        cnxCacheDisable = DriverManager.getConnection(jdbcCacheUrl, info);
+        cnxCacheDisable = DriverManager.getConnection(getOrSetJdbcCacheUrl(), info);
         Assert.assertNotNull(cnxCacheDisable);
     }
 
     @Test
     public void test002initConnectionWithCache() throws SQLException, IOException, ClassNotFoundException {
         final Properties info = new Properties();
-        info.setProperty("cache.driver.url", "jdbc:derby:memory:myDB;create=true");
-        cnxCacheEnable = DriverManager.getConnection(jdbcCacheUrl, info);
+        info.setProperty("cache.driver.url", "jdbc:derby:memory:" + getDerbyDbName() + ";create=true");
+        cnxCacheEnable = DriverManager.getConnection(getOrSetJdbcCacheUrl(), info);
         Assert.assertNotNull(cnxCacheEnable);
     }
 
     @Test
     public void test003initConnectionNoBackend() throws SQLException, IOException, ClassNotFoundException {
-        cnxCacheNoBackend = DriverManager.getConnection(jdbcCacheUrl);
+        cnxCacheNoBackend = DriverManager.getConnection(getOrSetJdbcCacheUrl());
         Assert.assertNotNull(cnxCacheNoBackend);
     }
 
@@ -171,13 +168,13 @@ public class DerbyTest {
             Assert.assertFalse(resultSet.wasNull());
     }
 
-    private ResultSet checkCache(ResultSet resultSet) {
-        Assert.assertEquals("com.qwazr.jdbc.cache.CachedResultSet", resultSet.getClass().getName());
+    protected ResultSet checkCache(ResultSet resultSet) {
+        Assert.assertEquals(expectedResultSetClass().getName(), resultSet.getClass().getName());
         return resultSet;
     }
 
-    private ResultSet checkNoCache(ResultSet resultSet) {
-        Assert.assertNotEquals("com.qwazr.jdbc.cache.CachedResultSet", resultSet.getClass().getName());
+    protected ResultSet checkNoCache(ResultSet resultSet) {
+        Assert.assertNotEquals(expectedResultSetClass().getName(), resultSet.getClass().getName());
         return resultSet;
     }
 

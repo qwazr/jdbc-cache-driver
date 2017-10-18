@@ -31,7 +31,8 @@ public class Driver implements java.sql.Driver {
 
     final static Logger LOGGER = Logger.getLogger(Driver.class.getPackage().getName());
 
-    public final static String URL_PREFIX = "jdbc:cache:file:";
+    public final static String URL_FILE_PREFIX = "jdbc:cache:file:";
+    public final static String URL_MEM_PREFIX = "jdbc:cache:mem:";
     public final static String CACHE_DRIVER_URL = "cache.driver.url";
     public final static String CACHE_DRIVER_CLASS = "cache.driver.class";
     public final static String CACHE_DRIVER_ACTIVE = "cache.driver.active";
@@ -44,7 +45,7 @@ public class Driver implements java.sql.Driver {
         }
     }
 
-    private final ConcurrentHashMap<Path, ResultSetCacheImpl> resultSetCacheMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ResultSetCache> resultSetCacheMap = new ConcurrentHashMap<>();
 
     public Connection connect(String url, Properties info) throws SQLException {
 
@@ -68,28 +69,35 @@ public class Driver implements java.sql.Driver {
                 null :
                 DriverManager.getConnection(cacheDriverUrl, info);
 
-        if (url.length() <= URL_PREFIX.length())
-            throw new SQLException("The path is empty: " + url);
-
-        if (!active)
+        if (!active) {
             return new CachedConnection(backendConnection, null);
+        }
 
-        // Check the cache directory
-        final Path cacheDirectory = FileSystems.getDefault().getPath(url.substring(URL_PREFIX.length()));
-
-        final ResultSetCacheImpl resultSetCache;
-
-        try {
-            resultSetCache = resultSetCacheMap.computeIfAbsent(cacheDirectory, ResultSetCacheImpl::new);
-        } catch (CacheException e) {
-            throw e.getSQLException();
+        final ResultSetCache resultSetCache;
+        if (url.startsWith(URL_FILE_PREFIX)) {
+            if (url.length() <= URL_FILE_PREFIX.length()) {
+                throw new SQLException("The path is empty: " + url);
+            }
+            // Check the cache directory
+            final String cacheName = url.substring(URL_FILE_PREFIX.length());
+            final Path cacheDirectory = FileSystems.getDefault().getPath(cacheName);
+            resultSetCache = resultSetCacheMap.computeIfAbsent(cacheName, (foo) -> new ResultSetOnDiskCacheImpl(cacheDirectory));
+        } else if (url.startsWith(URL_MEM_PREFIX)) {
+            if (url.length() <= URL_MEM_PREFIX.length()) {
+                throw new SQLException("The name is empty: " + url);
+            }
+            // Check the cache directory
+            final String cacheName = url.substring(URL_MEM_PREFIX.length());
+            resultSetCache = resultSetCacheMap.computeIfAbsent(cacheName, (foo) -> new ResultSetInMemoryCacheImpl());
+        } else {
+            throw new IllegalArgumentException("Can not find cache implementation for " + url);
         }
 
         return new CachedConnection(backendConnection, resultSetCache);
     }
 
     public boolean acceptsURL(String url) throws SQLException {
-        return url != null && url.startsWith(URL_PREFIX);
+        return url != null && (url.startsWith(URL_FILE_PREFIX) || url.startsWith(URL_MEM_PREFIX));
     }
 
     public DriverPropertyInfo[] getPropertyInfo(final String url, final Properties info) throws SQLException {
