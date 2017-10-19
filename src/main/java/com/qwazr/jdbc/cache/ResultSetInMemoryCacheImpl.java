@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 class ResultSetInMemoryCacheImpl extends ResultSetCacheImpl {
 
     private final ConcurrentHashMap<String, ReentrantLock> activeKeys;
-    private final ConcurrentHashMap<String, ByteArrayOutputStream> cache;
+    private final ConcurrentHashMap<String, byte[]> cache;
 
     ResultSetInMemoryCacheImpl() {
         this.activeKeys = new ConcurrentHashMap<>();
@@ -68,7 +68,7 @@ class ResultSetInMemoryCacheImpl extends ResultSetCacheImpl {
             try {
                 final ResultSet providedResultSet = resultSetProvider.provide();
                 ByteArrayOutputStream outputStream = ResultSetWriter.write(providedResultSet);
-                cache.put(key, outputStream);
+                cache.put(key, outputStream.toByteArray());
             } finally {
                 keyLock.unlock();
             }

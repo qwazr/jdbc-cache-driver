@@ -16,7 +16,6 @@
 package com.qwazr.jdbc.cache;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.sql.SQLException;
 
@@ -27,7 +26,7 @@ import java.sql.SQLException;
  * as lot of memory is going to be used by converting to byte[].
  */
 class CachedInMemoryResultSet extends CachedResultSet {
-    CachedInMemoryResultSet(final CachedStatement statement, ByteArrayOutputStream outputStream) throws SQLException {
-        super(statement, new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray())));
+    CachedInMemoryResultSet(final CachedStatement statement, byte[] bytes) throws SQLException {
+        super(statement, new DataInputStream(new ByteArrayInputStream(bytes)));
     }
 }
