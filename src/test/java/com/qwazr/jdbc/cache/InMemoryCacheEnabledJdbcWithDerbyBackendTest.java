@@ -15,26 +15,32 @@
  */
 package com.qwazr.jdbc.cache;
 
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-
-import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class InMemoryCacheDerbyTest extends DerbyTest {
+public class InMemoryCacheEnabledJdbcWithDerbyBackendTest extends InMemoryCacheJdbcWithDerbyBackendTest {
     @Override
     Class<? extends ResultSet> expectedResultSetClass() {
         return CachedInMemoryResultSet.class;
     }
 
     @Override
-    String getOrSetJdbcCacheUrl() {
-        return "jdbc:cache:mem:foo";
+    boolean isCacheEnabled() {
+        return true;
     }
 
     @Override
     String getDerbyDbName() {
-        return "myDB2";
+        return "inMemCacheEnabled";
+    }
+
+    @Override
+    Connection getConnection() throws SQLException {
+        final Properties info = new Properties();
+        info.setProperty("cache.driver.url", "jdbc:derby:memory:" + getDerbyDbName() + ";create=true");
+        return DriverManager.getConnection(getOrSetJdbcCacheUrl(), info);
     }
 }
