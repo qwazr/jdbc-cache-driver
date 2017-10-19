@@ -16,7 +16,6 @@
 package com.qwazr.jdbc.cache;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
