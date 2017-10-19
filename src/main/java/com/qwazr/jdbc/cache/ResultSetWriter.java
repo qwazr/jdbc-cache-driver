@@ -15,10 +15,22 @@
  */
 package com.qwazr.jdbc.cache;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Clob;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.zip.GZIPOutputStream;
 
 class ResultSetWriter {

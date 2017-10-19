@@ -16,12 +16,10 @@
 package com.qwazr.jdbc.cache;
 
 import java.io.ByteArrayOutputStream;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 abstract class ResultSetCacheImpl implements ResultSetCache {
