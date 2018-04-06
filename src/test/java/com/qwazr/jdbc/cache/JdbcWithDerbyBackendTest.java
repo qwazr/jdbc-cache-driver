@@ -49,17 +49,20 @@ abstract public class JdbcWithDerbyBackendTest extends JdbcTest {
     private static boolean dbCreated;
 
     abstract String getDerbyDbName();
+
     abstract Class<? extends ResultSet> expectedResultSetClass();
+
     abstract boolean isCacheEnabled();
 
     @BeforeClass
-    public static void init() throws ClassNotFoundException, IOException {
+    public static void init() {
         dbCreated = false;
     }
 
     /**
      * We make sure before starting a test that we have all the connections available
      * and that the database has been initialized
+     *
      * @throws SQLException in case we can't execute things on the database
      */
     @Before
@@ -165,72 +168,75 @@ abstract public class JdbcWithDerbyBackendTest extends JdbcTest {
 
     @Test
     public void test600TestResultSetMetaData() throws SQLException {
-        final ResultSetMetaData metaData = getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery()
-                .getMetaData();
-        Assert.assertNotNull(metaData);
-        int colCount = metaData.getColumnCount();
-        Assert.assertTrue(colCount > 0);
-        for (int i = 1; i <= colCount; i++) {
-            Assert.assertNotNull(metaData.getColumnName(i));
-            Assert.assertNotNull(metaData.getColumnLabel(i));
-            Assert.assertNotNull(metaData.getColumnTypeName(i));
-            Assert.assertNotNull(metaData.getCatalogName(i));
-            Assert.assertNotNull(metaData.getColumnClassName(i));
-            Assert.assertTrue(metaData.getColumnDisplaySize(i) > 0);
-            Assert.assertFalse(metaData.isReadOnly(i));
-            Assert.assertNotNull(metaData.getSchemaName(i));
-            Assert.assertNotNull(metaData.getTableName(i));
-            Assert.assertTrue(metaData.getPrecision(i) > 0);
-            Assert.assertTrue(metaData.isSearchable(i));
-            if (i == 1) {
-                Assert.assertTrue(metaData.isSigned(i));
-                Assert.assertEquals(0, metaData.getScale(i));
-                Assert.assertEquals(ResultSetMetaData.columnNoNulls, metaData.isNullable(i));
-                Assert.assertFalse(metaData.isCaseSensitive(i));
-                Assert.assertFalse(metaData.isAutoIncrement(i));
-                Assert.assertFalse(metaData.isCurrency(i));
-                Assert.assertFalse(metaData.isWritable(i));
-            } else {
-                Assert.assertEquals(ResultSetMetaData.columnNullable, metaData.isNullable(i));
+        try (final ResultSet resultSet = getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery()) {
+            Assert.assertNotNull(resultSet);
+            final ResultSetMetaData metaData = resultSet.getMetaData();
+            Assert.assertNotNull(metaData);
+            int colCount = metaData.getColumnCount();
+            Assert.assertTrue(colCount > 0);
+            for (int i = 1; i <= colCount; i++) {
+                Assert.assertNotNull(metaData.getColumnName(i));
+                Assert.assertNotNull(metaData.getColumnLabel(i));
+                Assert.assertNotNull(metaData.getColumnTypeName(i));
+                Assert.assertNotNull(metaData.getCatalogName(i));
+                Assert.assertNotNull(metaData.getColumnClassName(i));
+                Assert.assertTrue(metaData.getColumnDisplaySize(i) > 0);
+                Assert.assertFalse(metaData.isReadOnly(i));
+                Assert.assertNotNull(metaData.getSchemaName(i));
+                Assert.assertNotNull(metaData.getTableName(i));
+                Assert.assertTrue(metaData.getPrecision(i) > 0);
+                Assert.assertTrue(metaData.isSearchable(i));
+                if (i == 1) {
+                    Assert.assertTrue(metaData.isSigned(i));
+                    Assert.assertEquals(0, metaData.getScale(i));
+                    Assert.assertEquals(ResultSetMetaData.columnNoNulls, metaData.isNullable(i));
+                    Assert.assertFalse(metaData.isCaseSensitive(i));
+                    Assert.assertFalse(metaData.isAutoIncrement(i));
+                    Assert.assertFalse(metaData.isCurrency(i));
+                    Assert.assertFalse(metaData.isWritable(i));
+                } else {
+                    Assert.assertEquals(ResultSetMetaData.columnNullable, metaData.isNullable(i));
+                }
             }
         }
     }
 
     @Test
     public void test800ResultSetNotSupportedMethod() throws SQLException {
-        ResultSet resultSet = getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery();
-        checkNotSupported(() -> resultSet.updateArray(1, null));
-        checkNotSupported(() -> resultSet.updateArray("id", null));
-        checkNotSupported(() -> resultSet.updateAsciiStream(1, null));
-        checkNotSupported(() -> resultSet.updateAsciiStream("id", null));
-        checkNotSupported(() -> resultSet.updateBigDecimal(1, null));
-        checkNotSupported(() -> resultSet.updateBigDecimal("id", null));
-        checkNotSupported(() -> resultSet.updateByte(1, (byte) 0));
-        checkNotSupported(() -> resultSet.updateByte("id", (byte) 0));
-        checkNotSupported(() -> resultSet.updateBytes(1, null));
-        checkNotSupported(() -> resultSet.updateBytes("id", null));
-        checkNotSupported(() -> resultSet.updateBoolean(1, false));
-        checkNotSupported(() -> resultSet.updateBoolean("id", false));
-        checkNotSupported(() -> resultSet.updateDate(1, null));
-        checkNotSupported(() -> resultSet.updateDate("id", null));
-        checkNotSupported(() -> resultSet.updateDouble(1, 0d));
-        checkNotSupported(() -> resultSet.updateDouble("id", 0d));
-        checkNotSupported(() -> resultSet.updateFloat(1, 0f));
-        checkNotSupported(() -> resultSet.updateFloat("id", 0f));
-        checkNotSupported(() -> resultSet.updateInt(1, 0));
-        checkNotSupported(() -> resultSet.updateInt("id", 0));
-        checkNotSupported(() -> resultSet.updateLong(1, 0));
-        checkNotSupported(() -> resultSet.updateLong("id", 0));
-        checkNotSupported(() -> resultSet.updateRowId(1, null));
-        checkNotSupported(() -> resultSet.updateRowId("id", null));
-        checkNotSupported(() -> resultSet.updateNull(1));
-        checkNotSupported(() -> resultSet.updateNull("id"));
-        checkNotSupported(() -> resultSet.updateObject(1, null));
-        checkNotSupported(() -> resultSet.updateObject("id", null));
+        try (ResultSet resultSet = getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery()) {
+            checkNotSupported(() -> resultSet.updateArray(1, null));
+            checkNotSupported(() -> resultSet.updateArray("id", null));
+            checkNotSupported(() -> resultSet.updateAsciiStream(1, null));
+            checkNotSupported(() -> resultSet.updateAsciiStream("id", null));
+            checkNotSupported(() -> resultSet.updateBigDecimal(1, null));
+            checkNotSupported(() -> resultSet.updateBigDecimal("id", null));
+            checkNotSupported(() -> resultSet.updateByte(1, (byte) 0));
+            checkNotSupported(() -> resultSet.updateByte("id", (byte) 0));
+            checkNotSupported(() -> resultSet.updateBytes(1, null));
+            checkNotSupported(() -> resultSet.updateBytes("id", null));
+            checkNotSupported(() -> resultSet.updateBoolean(1, false));
+            checkNotSupported(() -> resultSet.updateBoolean("id", false));
+            checkNotSupported(() -> resultSet.updateDate(1, null));
+            checkNotSupported(() -> resultSet.updateDate("id", null));
+            checkNotSupported(() -> resultSet.updateDouble(1, 0d));
+            checkNotSupported(() -> resultSet.updateDouble("id", 0d));
+            checkNotSupported(() -> resultSet.updateFloat(1, 0f));
+            checkNotSupported(() -> resultSet.updateFloat("id", 0f));
+            checkNotSupported(() -> resultSet.updateInt(1, 0));
+            checkNotSupported(() -> resultSet.updateInt("id", 0));
+            checkNotSupported(() -> resultSet.updateLong(1, 0));
+            checkNotSupported(() -> resultSet.updateLong("id", 0));
+            checkNotSupported(() -> resultSet.updateRowId(1, null));
+            checkNotSupported(() -> resultSet.updateRowId("id", null));
+            checkNotSupported(() -> resultSet.updateNull(1));
+            checkNotSupported(() -> resultSet.updateNull("id"));
+            checkNotSupported(() -> resultSet.updateObject(1, null));
+            checkNotSupported(() -> resultSet.updateObject("id", null));
+        }
     }
 
     @Test
-    public void test900TestCacheAPI() throws SQLException, IOException {
+    public void test900TestCacheAPI() throws SQLException {
         ResultSetCache cache = com.qwazr.jdbc.cache.Driver.getCache(getConnection());
 
         // We can only test the cache API in the context of a cacheable connection
@@ -241,9 +247,9 @@ abstract public class JdbcWithDerbyBackendTest extends JdbcTest {
         Assert.assertEquals(0, cache.size());
         Assert.assertEquals(0, cache.active());
 
-        executeQuery(getConnection());
-        getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery();
-        getCallableStatement(getConnection()).executeQuery();
+        executeQuery(getConnection()).close();
+        getPreparedStatement(getConnection(), ROW1, ROW4).executeQuery().close();
+        getCallableStatement(getConnection()).executeQuery().close();
 
         Assert.assertEquals(3, cache.size());
         Assert.assertEquals(0, cache.active());

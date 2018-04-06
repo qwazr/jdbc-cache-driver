@@ -90,7 +90,8 @@ class CachedConnection implements Connection {
     public String nativeSQL(String sql) throws SQLException {
         if (connection != null)
             return connection.nativeSQL(sql);
-        throw new SQLFeatureNotSupportedException();
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -109,14 +110,16 @@ class CachedConnection implements Connection {
     public void commit() throws SQLException {
         if (connection != null)
             connection.commit();
-        throw new SQLFeatureNotSupportedException();
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void rollback() throws SQLException {
         if (connection != null)
-            connection.commit();
-        throw new SQLFeatureNotSupportedException();
+            connection.rollback();
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -135,7 +138,8 @@ class CachedConnection implements Connection {
     public DatabaseMetaData getMetaData() throws SQLException {
         if (connection != null)
             return connection.getMetaData();
-        throw new SQLFeatureNotSupportedException();
+        else
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override
