@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 class ResultSetOnDiskCacheImpl extends ResultSetCacheImpl {
 
@@ -118,13 +119,23 @@ class ResultSetOnDiskCacheImpl extends ResultSetCacheImpl {
     }
 
     private void parse(final Consumer<Path> consumer) throws SQLException {
-        try {
-            synchronized (cacheDirectory) {
-                Files.list(cacheDirectory).forEach(path -> {
-                    if (!path.endsWith(".tmp"))
-                        consumer.accept(path);
-                });
-            }
+        try (final Stream<Path> stream = Files.list(cacheDirectory)) {
+            stream.forEach(path -> {
+                final String name = path.getFileName().toString();
+                if (!name.endsWith(".tmp")) {
+                    final Lock keyLock = activeKeys.computeIfAbsent(name, s -> new ReentrantLock(true));
+                    try {
+                        keyLock.lock();
+                        try {
+                            consumer.accept(path);
+                        } finally {
+                            keyLock.unlock();
+                        }
+                    } finally {
+                        activeKeys.remove(name);
+                    }
+                }
+            });
         } catch (CacheException e) {
             throw e.getSQLException();
         } catch (IOException e) {
