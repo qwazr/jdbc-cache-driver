@@ -36,10 +36,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</connection>
-        <developerConnection>scm:git:git@github.com:qwazr/jdbc-cache-driver.git</developerConnection>
+        <connection>https://github.com/qwazr/jdbc-cache-driver.git</connection>
+        <developerConnection>https://github.com/qwazr/jdbc-cache-driver.git</developerConnection>
         <url>https://github.com/qwazr/jdbc-cache-driver.git</url>
-        <tag>HEAD</tag>
     </scm>
     <issueManagement>
         <url>https://github.com/qwazr/jdbc-cache-driver/lissues</url>
