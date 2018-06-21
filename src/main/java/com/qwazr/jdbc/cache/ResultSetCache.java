@@ -33,6 +33,7 @@ public interface ResultSetCache {
      * Remove any cache entry for the given statement.
      *
      * @param stmt the statement to flush
+     * @throws SQLException if any SQL error occurs
      */
     void flush(Statement stmt) throws SQLException;
 
@@ -47,6 +48,7 @@ public interface ResultSetCache {
      *
      * @param stmt the statement to check
      * @return true if a cache entry exists
+     * @throws SQLException if any SQL error occurs
      */
     boolean exists(Statement stmt) throws SQLException;
 
@@ -58,6 +60,7 @@ public interface ResultSetCache {
     /**
      * @param stmt the statement to flush
      * @return true if a cache entry is currently build for the given statement
+     * @throws SQLException if any SQL error occurs
      */
     boolean active(Statement stmt) throws SQLException;
 
