@@ -73,7 +73,7 @@ class Driver : java.sql.Driver {
     }
 
     @Throws(SQLException::class)
-    override fun getPropertyInfo(url: String, info: Properties): Array<DriverPropertyInfo> {
+    override fun getPropertyInfo(url: String?, info: Properties?): Array<DriverPropertyInfo> {
         return arrayOf(
             DriverPropertyInfo(CACHE_DRIVER_URL, null),
             DriverPropertyInfo(CACHE_DRIVER_CLASS, null), DriverPropertyInfo(CACHE_DRIVER_ACTIVE, null)
