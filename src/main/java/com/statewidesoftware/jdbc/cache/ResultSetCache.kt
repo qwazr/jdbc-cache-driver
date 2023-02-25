@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.statewidesoftware.jdbc.cache;
+package com.statewidesoftware.jdbc.cache
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.IOException
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Statement
 
-public interface ResultSetCache {
-
+interface ResultSetCache {
     /**
      * Flush all entries in the cache
      *
      * @throws SQLException if any SQL error occurs
      */
-    void flush() throws SQLException;
+    @Throws(SQLException::class)
+    fun flush()
 
     /**
      * Remove any cache entry for the given statement.
@@ -35,13 +35,15 @@ public interface ResultSetCache {
      * @param stmt the statement to flush
      * @throws SQLException if any SQL error occurs
      */
-    void flush(Statement stmt) throws SQLException;
+    @Throws(SQLException::class)
+    fun flush(stmt: Statement?)
 
     /**
      * @return the number of entries in the cache
      * @throws SQLException if any SQL error occurs
      */
-    int size() throws SQLException;
+    @Throws(SQLException::class)
+    fun size(): Int
 
     /**
      * Check if the cache contains an entry for this statement.
@@ -50,25 +52,27 @@ public interface ResultSetCache {
      * @return true if a cache entry exists
      * @throws SQLException if any SQL error occurs
      */
-    boolean exists(Statement stmt) throws SQLException;
+    @Throws(SQLException::class)
+    fun exists(stmt: Statement?): Boolean
 
     /**
      * @return the number of cache entry build currently in progress
      */
-    int active();
+    fun active(): Int
 
     /**
      * @param stmt the statement to flush
      * @return true if a cache entry is currently build for the given statement
      * @throws SQLException if any SQL error occurs
      */
-    boolean active(Statement stmt) throws SQLException;
+    @Throws(SQLException::class)
+    fun active(stmt: Statement?): Boolean
 
-    <T extends Statement> ResultSet get(CachedStatement statement, String key, Provider s) throws SQLException;
-
-    boolean checkIfExists(String key);
-
+    @Throws(SQLException::class)
+    operator fun <T : Statement?> get(statement: CachedStatement<*>?, key: String?, s: Provider?): ResultSet?
+    fun checkIfExists(key: String?): Boolean
     interface Provider {
-        ResultSet provide() throws SQLException, IOException;
+        @Throws(SQLException::class, IOException::class)
+        fun provide(): ResultSet?
     }
 }

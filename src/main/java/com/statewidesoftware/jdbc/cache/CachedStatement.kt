@@ -19,7 +19,7 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.sql.*
 
-internal open class CachedStatement<T : Statement?> @JvmOverloads constructor(
+open class CachedStatement<T : Statement?> @JvmOverloads constructor(
     private val connection: CachedConnection?, val resultSetCache: ResultSetCache?,
     backendStatement: T, resultSetConcurrency: Int = 0, resultSetType: Int = 0,
     resultSetHoldability: Int = 0
@@ -101,7 +101,16 @@ internal open class CachedStatement<T : Statement?> @JvmOverloads constructor(
             ?.get<Statement>(
                 this,
                 generatedKey,
-                if (backendStatement == null) null else ResultSetCache.Provider { backendStatement.executeQuery(sql) })
+                if (backendStatement == null) {
+                    null
+                } else {
+                    object : ResultSetCache.Provider {
+                        override fun provide(): ResultSet? {
+                            return backendStatement.executeQuery(sql)
+                        }
+                    }
+                }
+            )
     }
 
     @Throws(SQLException::class)
@@ -187,7 +196,16 @@ internal open class CachedStatement<T : Statement?> @JvmOverloads constructor(
         return resultSetCache?.get<Statement>(
             this,
             generatedKey,
-            if (backendStatement == null) null else ResultSetCache.Provider { backendStatement.resultSet })
+            if (backendStatement == null) {
+                null
+            } else {
+                object : ResultSetCache.Provider {
+                    override fun provide(): ResultSet? {
+                        return backendStatement.resultSet
+                    }
+                }
+            }
+        )
     }
 
     @Throws(SQLException::class)

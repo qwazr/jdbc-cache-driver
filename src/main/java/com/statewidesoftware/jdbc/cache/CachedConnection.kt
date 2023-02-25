@@ -19,7 +19,7 @@ import java.sql.*
 import java.util.*
 import java.util.concurrent.Executor
 
-internal class CachedConnection(private val connection: Connection?, val resultSetCache: ResultSetCache?) : Connection {
+class CachedConnection(private val connection: Connection?, val resultSetCache: ResultSetCache?) : Connection {
     @Volatile
     private var autocommit = false
 

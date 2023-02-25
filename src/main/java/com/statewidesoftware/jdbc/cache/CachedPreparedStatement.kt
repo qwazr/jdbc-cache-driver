@@ -60,7 +60,17 @@ internal open class CachedPreparedStatement<T : PreparedStatement?> @JvmOverload
         return resultSetCache?.get<Statement>(
             this,
             generatedKey,
-            if (backendStatement != null) ResultSetCache.Provider { backendStatement.executeQuery() } else null)
+            if (backendStatement != null) {
+                object : ResultSetCache.Provider {
+                    @Throws(SQLException::class)
+                    override fun provide(): ResultSet? {
+                        return backendStatement.executeQuery()
+                    }
+                }
+            } else {
+                null
+            }
+        )
     }
 
     @Throws(SQLException::class)
