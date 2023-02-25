@@ -2,15 +2,17 @@
 
 ## Note
 
-This was forked and ported to Kotlin from the original Java project at
-https://github.com/qwazr/jdbc-cache-driver
+***This was forked and ported to Kotlin from the original Java project at
+https://github.com/qwazr/jdbc-cache-driver***
 
-JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files or in memory.
+## Overview
+
+Kotlin-JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files or in memory.
 The same query requested again will be read from the file, the database is no more requested again.
 
 You may use it to easily mock ResultSets from a database.
 
-JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any third-party JDBC driver.
+Kotlin-JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any third-party JDBC driver.
 
 Usage
 -----
@@ -22,7 +24,7 @@ The library is available on Maven Central.
 ```xml
 <dependency>
   <groupId>com.statewidesoftware</groupId>
-  <artifactId>jdbc-cache-driver</artifactId>
+  <artifactId>kotlin-jdbc-cache-driver</artifactId>
   <version>1.4</version>
 </dependency>
 ```
