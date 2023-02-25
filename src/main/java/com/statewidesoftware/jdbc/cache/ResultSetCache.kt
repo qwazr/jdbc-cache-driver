@@ -68,11 +68,12 @@ interface ResultSetCache {
     @Throws(SQLException::class)
     fun active(stmt: Statement?): Boolean
 
-    @Throws(SQLException::class)
-    operator fun <T : Statement?> get(statement: CachedStatement<*>?, key: String?, s: Provider?): ResultSet?
     fun checkIfExists(key: String?): Boolean
     interface Provider {
         @Throws(SQLException::class, IOException::class)
         fun provide(): ResultSet?
     }
+
+    @Throws(SQLException::class)
+    operator fun <T> get(statement: CachedStatement<*>?, key: String?, resultSetProvider: Provider?): ResultSet?
 }
