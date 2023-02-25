@@ -55,9 +55,9 @@ internal open class CachedPreparedStatement<T : PreparedStatement?> @JvmOverload
     }
 
     @Throws(SQLException::class)
-    override fun executeQuery(): ResultSet {
+    override fun executeQuery(): ResultSet? {
         generateKey()
-        return resultSetCache.get<Statement>(
+        return resultSetCache?.get<Statement>(
             this,
             generatedKey,
             if (backendStatement != null) ResultSetCache.Provider { backendStatement.executeQuery() } else null)
@@ -188,7 +188,7 @@ internal open class CachedPreparedStatement<T : PreparedStatement?> @JvmOverload
     @Throws(SQLException::class)
     override fun execute(): Boolean {
         generateKey()
-        return resultSetCache.checkIfExists(generatedKey) || checkBackendStatement("No cache entry")!!.execute()
+        return resultSetCache?.checkIfExists(generatedKey) == true || checkBackendStatement("No cache entry")!!.execute()
     }
 
     @Throws(SQLException::class)
