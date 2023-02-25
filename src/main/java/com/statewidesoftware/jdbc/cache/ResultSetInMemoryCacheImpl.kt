@@ -67,6 +67,10 @@ internal class ResultSetInMemoryCacheImpl : ResultSetCacheImpl() {
             keyLock.lock()
             try {
                 val providedResultSet = resultSetProvider.provide()
+                if (providedResultSet == null) {
+                    cache[key!!] = ByteArray(0)
+                    return
+                }
                 val outputStream = ResultSetWriter.write(providedResultSet)
                 cache[key!!] = outputStream.toByteArray()
             } finally {
