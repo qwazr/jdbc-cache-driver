@@ -36,7 +36,7 @@ You can use any compliant JDBC driver.
 
 ```java
 // Initialize the cache driver
-Class.forName("com.qwazr.jdbc.cache.Driver");
+Class.forName("com.statewidesoftware.jdbc.cache.Driver");
 
 // Provide the URL and the Class name of the backend driver
 Properties info = new Properties();
