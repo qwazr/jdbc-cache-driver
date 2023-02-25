@@ -37,6 +37,11 @@ java {
     withJavadocJar()
 }
 
+tasks.withType<Javadoc> {
+    enabled = false
+}
+
+
 publishing {
     publications.create<MavenPublication>("maven") {
         from(components["java"])
