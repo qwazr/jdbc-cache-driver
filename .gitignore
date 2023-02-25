@@ -13,3 +13,6 @@ buildNumber.properties
 .mvn/timing.properties
 
 /derby.log
+/.gradle
+/build
+/gradle
