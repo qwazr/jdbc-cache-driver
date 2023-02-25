@@ -29,13 +29,12 @@ class InMemoryCacheEnabledJdbcWithDerbyBackendTest : InMemoryCacheJdbcWithDerbyB
         return CachedInMemoryResultSet::class.java
     }
 
-    public override fun isCacheEnabled(): Boolean {
-        return true
-    }
 
-    public override fun getDerbyDbName(): String {
-        return "inMemCacheEnabled"
-    }
+    override val isCacheEnabled: Boolean
+        get() = true
+
+    override val derbyDbName: String?
+        get() = "inMemCacheEnabled"
 
     @Throws(SQLException::class)
     public override fun getConnection(): Connection {

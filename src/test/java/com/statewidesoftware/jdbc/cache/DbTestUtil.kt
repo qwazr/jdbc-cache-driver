@@ -44,7 +44,7 @@ internal object DbTestUtil {
     val ROW4 = arrayOf<Any?>(40, null, null, null, null, null, null, 4.44, 4.4f, 4.toShort(), 4000000L, "clob4")
     val ROW5 = arrayOf<Any?>(50, null, null, null, null, null, null, 5.55, 5.5f, 5.toShort(), 5000000L, null)
     @JvmField
-    val ROWS = arrayOf(ROW1, ROW2, ROW3, ROW4, ROW5)
+    val ROWS: Array<Array<Any?>> = arrayOf(ROW1, ROW2, ROW3, ROW4, ROW5)
     const val SQL_TABLE = ("CREATE TABLE FIRSTTABLE (ID INT PRIMARY KEY, NAME VARCHAR(12), TS TIMESTAMP, "
             + "DT1 DATE, DT2 DATE, TI1 TIME, TI2 TIME, DBL DOUBLE, FL FLOAT, TI SMALLINT, BI BIGINT, CL CLOB)")
     const val SQL_INSERT = "INSERT INTO FIRSTTABLE VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -103,7 +103,7 @@ internal object DbTestUtil {
 
     @JvmStatic
     @Throws(SQLException::class, IOException::class)
-    fun checkResultSet(resultSet: ResultSet, vararg rows: Array<Any>) {
+    fun checkResultSet(resultSet: ResultSet, vararg rows: Array<Any?>) {
         Assert.assertNotNull("The resultSet is null", resultSet)
         if (resultSet.type != ResultSet.TYPE_FORWARD_ONLY) Assert.assertTrue(resultSet.isBeforeFirst)
         var count = 0
@@ -182,7 +182,7 @@ internal object DbTestUtil {
 
     @JvmStatic
     @Throws(SQLException::class)
-    fun getPreparedStatement(cnx: Connection, row1: Array<Any>, row2: Array<Any>): PreparedStatement {
+    fun getPreparedStatement(cnx: Connection, row1: Array<Any?>, row2: Array<Any?>): PreparedStatement {
         val stmt = cnx.prepareStatement(SQL_PREP_ARG)
         stmt.setInt(1, row1[0] as Int)
         stmt.setInt(2, row2[0] as Int)

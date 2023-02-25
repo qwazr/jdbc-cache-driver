@@ -30,13 +30,12 @@ class InMemoryCacheDisabledJdbcWithDerbyBackendTest : InMemoryCacheJdbcWithDerby
         return EmbedResultSet42::class.java
     }
 
-    public override fun isCacheEnabled(): Boolean {
-        return false
-    }
+    override val isCacheEnabled: Boolean
+        get() = false
 
-    public override fun getDerbyDbName(): String {
-        return "inMemCacheDisabled"
-    }
+    override val derbyDbName: String
+        get() = "inMemCacheDisabled"
+
 
     @Throws(SQLException::class)
     public override fun getConnection(): Connection {

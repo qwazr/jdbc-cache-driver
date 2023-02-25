@@ -29,13 +29,12 @@ class OnDiskCacheEnabledJdbcWithDerbyBackendTest : OnDiskCacheJdbcWithDerbyBacke
         return CachedOnDiskResultSet::class.java
     }
 
-    public override fun isCacheEnabled(): Boolean {
-        return true
-    }
+    override val isCacheEnabled: Boolean
+        get() = true
 
-    public override fun getDerbyDbName(): String {
-        return "onDiskCacheEnabled"
-    }
+    override val derbyDbName: String
+        get() = "onDiskCacheEnabled"
+
 
     @Throws(SQLException::class)
     public override fun getConnection(): Connection {

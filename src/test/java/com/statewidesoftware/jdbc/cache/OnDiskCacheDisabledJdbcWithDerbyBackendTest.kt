@@ -26,17 +26,16 @@ import java.sql.SQLException
 import java.util.*
 
 class OnDiskCacheDisabledJdbcWithDerbyBackendTest : OnDiskCacheJdbcWithDerbyBackendTest() {
-    public override fun expectedResultSetClass(): Class<out ResultSet?> {
+    override fun expectedResultSetClass(): Class<out ResultSet?> {
         return EmbedResultSet42::class.java
     }
 
-    public override fun isCacheEnabled(): Boolean {
-        return false
-    }
+    override val isCacheEnabled: Boolean
+        get() = false
 
-    public override fun getDerbyDbName(): String {
-        return "onDiskCacheDisabled"
-    }
+    override val derbyDbName: String?
+        get() = "onDiskCacheDisabled"
+
 
     @Throws(SQLException::class)
     public override fun getConnection(): Connection {
