@@ -1,10 +1,9 @@
-# jdbc-cache-driver
+# kotlin-jdbc-cache-driver
 
-[![Build Status](https://travis-ci.org/qwazr/jdbc-cache-driver.svg?branch=master)](https://travis-ci.org/qwazr/jdbc-cache-driver)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.qwazr/jdbc-cache-driver)
-[![Join the chat at https://gitter.im/qwazr/QWAZR](https://badges.gitter.im/qwazr/QWAZR.svg)](https://gitter.im/qwazr/QWAZR)
-[![Javadocs](http://www.javadoc.io/badge/com.qwazr/jdbc-cache-driver.svg)](http://www.javadoc.io/doc/com.qwazr/jdbc-cache-driver)
-[![Coverage Status](https://coveralls.io/repos/github/qwazr/jdbc-cache-driver/badge.svg?branch=master)](https://coveralls.io/github/qwazr/jdbc-cache-driver?branch=master)
+## Note
+
+This was forked and ported to Kotlin from the original Java project at
+https://github.com/qwazr/jdbc-cache-driver
 
 JDBC-Driver-Cache is JDBC cache which store the result of a SQL query (ResultSet) in files or in memory.
 The same query requested again will be read from the file, the database is no more requested again.
@@ -16,15 +15,15 @@ JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any third-p
 Usage
 -----
 
-### Add the driver in your maven projet
+### Add the driver in your maven project
 
 The library is available on Maven Central.
 
 ```xml
 <dependency>
-  <groupId>com.qwazr</groupId>
+  <groupId>com.statewidesoftware</groupId>
   <artifactId>jdbc-cache-driver</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ```
 
@@ -85,7 +84,7 @@ Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", 
 Community
 ---------
 
-JDBC-Driver-Cache is open source and is licensed under the Apache 2.0 License.
+Kotlin JDBC-Driver-Cache is open source and is licensed under the Apache 2.0 License.
 
 Report any issue here:
-https://github.com/qwazr/jdbc-cache-driver/issues
+https://github.com/jhstatewide/jdbc-cache-driver/issues
