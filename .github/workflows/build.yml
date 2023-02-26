@@ -5,18 +5,43 @@ on: [push, pull_request]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Setup JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-    
-    - name: Build with Gradle
-      run: ./gradlew build
-    
-    - name: Run Tests with Gradle
-      run: ./gradlew test
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Build and Test
+        run: ./gradlew clean test
+
+      - name: Save test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test Results
+          path: build/test-results
+
+      - name: Cache Gradle build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-gradle-build-
+
+          # Exclude test result directories from the cache
+          # to avoid caching outdated test results
+          # Note: You may need to adjust this based on your specific project setup
+          # For example, if you're using JUnit 4 instead of JUnit 5, the directory structure might be different.
+          # You can use the `tree` command to inspect the directory structure of the test results directory.
+          # Example: `tree build/test-results`
+          # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#using-cache-actions-with-builds
+          # for more information on caching with GitHub Actions.
+          exclude: |
+            build/test-results/*
+            build/reports/*
