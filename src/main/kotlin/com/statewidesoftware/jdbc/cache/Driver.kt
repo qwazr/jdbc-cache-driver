@@ -23,6 +23,8 @@ import java.util.logging.Logger
 
 class Driver : java.sql.Driver {
     private val resultSetCacheMap = ConcurrentHashMap<String, ResultSetCache>()
+    private val logger = Logger.getLogger(Driver::class.java.name).apply { level = Level.ALL }
+
     @Throws(SQLException::class, IllegalArgumentException::class)
     override fun connect(url: String, info: Properties): Connection? {
         if (!acceptsURL(url)) return null
@@ -51,7 +53,9 @@ class Driver : java.sql.Driver {
             }
             // Check the cache directory
             val cacheName = url.substring(URL_FILE_PREFIX.length)
+            logger.fine { "Cache directory: $cacheName"}
             val cacheDirectory = FileSystems.getDefault().getPath(cacheName)
+            logger.fine { "Cache directory: $cacheDirectory"}
             resultSetCacheMap.computeIfAbsent(cacheName) { ResultSetOnDiskCacheImpl(cacheDirectory) }
         } else if (url.startsWith(URL_MEM_PREFIX)) {
             if (url.length <= URL_MEM_PREFIX.length) {

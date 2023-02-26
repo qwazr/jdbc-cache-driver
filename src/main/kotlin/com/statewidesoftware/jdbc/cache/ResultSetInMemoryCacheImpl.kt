@@ -23,13 +23,8 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
 internal class ResultSetInMemoryCacheImpl : ResultSetCacheImpl() {
-    private val activeKeys: ConcurrentHashMap<String?, ReentrantLock>
-    private val cache: ConcurrentHashMap<String?, ByteArray>
-
-    init {
-        activeKeys = ConcurrentHashMap()
-        cache = ConcurrentHashMap()
-    }
+    private val activeKeys: ConcurrentHashMap<String?, ReentrantLock> = ConcurrentHashMap()
+    private val cache: ConcurrentHashMap<String?, ByteArray> = ConcurrentHashMap()
 
     /**
      * Return the cached ResultSet for the given key.

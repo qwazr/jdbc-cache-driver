@@ -29,11 +29,10 @@ abstract class OnDiskCacheJdbcWithDerbyBackendTest : JdbcWithDerbyBackendTest() 
     }
 
     companion object {
-        private var tempDirPath: String? = null
+        private var tempDirPath: String? = Files.createTempDirectory("jdbc-cache-test").toUri().path
         @BeforeClass
         @Throws(IOException::class)
         fun createTmpDir() {
-            tempDirPath = Files.createTempDirectory("jdbc-cache-test").toUri().path
             if (tempDirPath == null) {
                 throw IOException("Cannot create temp directory")
             }

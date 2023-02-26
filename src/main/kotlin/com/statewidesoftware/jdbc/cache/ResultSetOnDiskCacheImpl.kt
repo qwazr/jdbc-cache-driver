@@ -27,12 +27,16 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Consumer
+import java.util.logging.Level
+import java.util.logging.Logger
 
 internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheImpl() {
     private val cacheDirectory: Path
     private val activeKeys: ConcurrentHashMap<String?, ReentrantLock>
+    private val logger = Logger.getLogger(ResultSetOnDiskCacheImpl::class.java.name).apply { level = Level.ALL }
 
     init {
+        logger.fine { "Using disk cache: $cacheDirectory" }
         if (!Files.exists(cacheDirectory)) {
             try {
                 Files.createDirectories(cacheDirectory)
