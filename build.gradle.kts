@@ -10,10 +10,15 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "1.8.10"
+    id("com.github.johnrengelman.shadow") version "8.0.0"
 }
 
 val githubUsername: String? by project
 val githubToken: String? by project
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    archiveClassifier.set("")
+}
 
 publishing {
     repositories {
@@ -29,6 +34,11 @@ publishing {
     publications {
         register<MavenPublication>("gpr") {
             from(components["java"])
+
+            // include the shadow JAR with a "shadow" classifier
+            artifact(tasks["shadowJar"]) {
+                classifier = "shadow"
+            }
         }
     }
 }
@@ -49,7 +59,7 @@ dependencies {
 }
 
 group = "com.statewidesoftware"
-version = "1.4.1"
+version = "1.4.2-SNAPSHOT"
 description = "JDBC Cache Driver"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -61,13 +71,6 @@ java {
 tasks.withType<Javadoc> {
     enabled = false
 }
-
-
-//publishing {
-//    publications.create<MavenPublication>("maven") {
-//        from(components["java"])
-//    }
-//}
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
