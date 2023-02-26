@@ -1,4 +1,4 @@
-/*
+package com.statewidesoftware.jdbc.cache/*
  * Copyright 2016-2017 Emmanuel Keller / QWAZR
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.statewidesoftware.jdbc.cache
 
 import java.io.IOException
 import java.sql.ResultSet
