@@ -72,7 +72,9 @@ internal abstract class CachedResultSet(private val statement: CachedStatement<*
     private fun readNext() {
         try {
             nextPos = input.readInt()
-            if (nextPos != currentPos + 1) throw SQLException("Expects pos " + (currentPos + 1) + ", but got: " + nextPos)
+            if (nextPos != currentPos + 1) {
+                throw SQLException("Expects pos " + (currentPos + 1) + ", but got: " + nextPos)
+            }
         } catch (e: EOFException) {
             nextPos = 0
             return
@@ -81,7 +83,7 @@ internal abstract class CachedResultSet(private val statement: CachedStatement<*
         }
         var i = 0
         try {
-            for (column in metaData!!.columns) nextRow[i++] = readRow(column.type, input)
+            for (column in metaData.columns) nextRow[i++] = readRow(column.type, input)
         } catch (e: IOException) {
             throw SQLException("Cannot extract column $i - pos $nextPos", e)
         }
@@ -244,7 +246,7 @@ internal abstract class CachedResultSet(private val statement: CachedStatement<*
 
     @Throws(SQLException::class)
     private fun checkColumn(label: String): Int {
-        return columnNames!![label] ?: throw SQLException("Column not found: $label")
+        return columnNames[label] ?: throw SQLException("Column not found: $label")
     }
 
     @Throws(SQLException::class)
@@ -345,7 +347,7 @@ internal abstract class CachedResultSet(private val statement: CachedStatement<*
 
     @Throws(SQLException::class)
     override fun getMetaData(): ResultSetMetaData {
-        return metaData!!
+        return metaData
     }
 
     @Throws(SQLException::class)
