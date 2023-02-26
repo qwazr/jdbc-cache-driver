@@ -25,7 +25,7 @@ import java.nio.file.Files
 
 abstract class OnDiskCacheJdbcWithDerbyBackendTest : JdbcWithDerbyBackendTest() {
     public override fun getOrSetJdbcCacheUrl(): String {
-        return "jdbc:cache:file:" + tempDirPath + File.separatorChar + "cache"
+        return "jdbc:cache:file:" + tempDirPath + File.separatorChar + "com/statewidesoftware/jdbc/cache"
     }
 
     companion object {

@@ -18,6 +18,7 @@
  */
 package com.statewidesoftware.jdbc.cache
 
+import com.statewidesoftware.jdbc.cache.CachedOnDiskResultSet
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet

@@ -18,6 +18,10 @@ val githubToken: String? by project
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     archiveClassifier.set("")
+
+    relocate("kotlin", "com.statewidesoftware.kotlin")
+    relocate("org.jetbrains", "com.statewidesoftware.jetbrains")
+    relocate("org.intellij", "com.statewidesoftware.intellij")
 }
 
 publishing {
