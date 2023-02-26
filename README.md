@@ -1,5 +1,8 @@
 # kotlin-jdbc-cache-driver
 
+## Build Status
+![Build](https://github.com/jhstatewide/kotlin-jdbc-cache-driver/actions/workflows/build.yml/badge.svg)
+
 ## Note
 
 ***This was forked and ported to Kotlin from the original Java project at
