@@ -12,6 +12,27 @@ plugins {
     kotlin("jvm") version "1.8.10"
 }
 
+val githubUsername: String? by project
+val githubToken: String? by project
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/jhstatewide/kotlin-jdbc-cache-driver")
+            credentials {
+                username = githubUsername ?: project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+                password = githubToken ?: project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
+}
+
 repositories {
     mavenLocal()
     maven {
@@ -42,11 +63,11 @@ tasks.withType<Javadoc> {
 }
 
 
-publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-    }
-}
+//publishing {
+//    publications.create<MavenPublication>("maven") {
+//        from(components["java"])
+//    }
+//}
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
