@@ -20,17 +20,21 @@ Kotlin-JDBC-Driver-Cache is itself a JDBC driver and acts as a wrapper over any 
 Usage
 -----
 
-### Add the driver in your maven project
+### ~~Add the driver in your maven project~~
 
-The library is available on Maven Central.
+~~The library is available on Maven Central.~~
 
-```xml
+
+~~~strike
 <dependency>
   <groupId>com.statewidesoftware</groupId>
   <artifactId>kotlin-jdbc-cache-driver</artifactId>
   <version>1.4</version>
 </dependency>
-```
+~~~
+
+**NOTE**: I have not yet published this to Maven Central. Waiting for access... in the meantime jars are published
+under "Releases" on GitHub, or of course you can build it yourself.
 
 ### JAVA Code example
 
