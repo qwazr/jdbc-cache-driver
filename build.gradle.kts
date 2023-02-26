@@ -63,7 +63,7 @@ dependencies {
 }
 
 group = "com.statewidesoftware"
-version = "1.4.2-SNAPSHOT"
+version = "1.4.3"
 description = "JDBC Cache Driver"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
