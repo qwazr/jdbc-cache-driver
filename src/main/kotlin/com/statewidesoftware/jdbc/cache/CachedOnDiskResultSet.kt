@@ -24,7 +24,7 @@ import kotlin.jvm.Throws
 /**
  * Uses disk persistence for caching
  */
-internal class CachedOnDiskResultSet @Throws(IOException::class) constructor(statement: CachedStatement<*>?, resultSetPath: Path) : CachedResultSet(
+internal class CachedOnDiskResultSet @Throws(IOException::class) constructor(statement: CachedStatement<*>, resultSetPath: Path) : CachedResultSet(
     statement, DataInputStream(
         GZIPInputStream(FileInputStream(resultSetPath.toFile()))
     )

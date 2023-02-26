@@ -81,11 +81,9 @@ internal object ResultSetWriter {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun readColumns(input: DataInputStream): Array<ColumnDef?> {
+    fun readColumns(input: DataInputStream): Array<ColumnDef> {
         val columnCount = input.readInt()
-        val columns = arrayOfNulls<ColumnDef>(columnCount)
-        for (i in 0 until columnCount) columns[i] = ColumnDef(input)
-        return columns
+        return Array(columnCount) { ColumnDef(input) }
     }
 
     @Throws(SQLException::class, IOException::class)

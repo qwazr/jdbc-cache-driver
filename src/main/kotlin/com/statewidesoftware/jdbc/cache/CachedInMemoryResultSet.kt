@@ -23,5 +23,5 @@ import java.io.DataInputStream
  * Warning: this is a super naive implementation. Not designed to run in production
  * as lot of memory is going to be used by converting to byte[].
  */
-internal class CachedInMemoryResultSet(statement: CachedStatement<*>?, bytes: ByteArray?) :
+internal class CachedInMemoryResultSet(statement: CachedStatement<*>, bytes: ByteArray?) :
     CachedResultSet(statement, DataInputStream(ByteArrayInputStream(bytes)))

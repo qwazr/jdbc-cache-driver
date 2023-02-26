@@ -51,6 +51,7 @@ internal class ResultSetInMemoryCacheImpl : ResultSetCacheImpl() {
                 throw SQLException("Can not read cache", e)
             }
         }
+        if (statement == null) return null
         return CachedInMemoryResultSet(statement, cache[key])
     }
 

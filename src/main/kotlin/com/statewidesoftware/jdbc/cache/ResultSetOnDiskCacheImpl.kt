@@ -72,6 +72,7 @@ internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheIm
             buildCache(key, resultSetPath, resultSetProvider)
         }
         return try {
+            if (statement == null) return null
             CachedOnDiskResultSet(statement, resultSetPath)
         } catch (e: IOException) {
             throw SQLException("Can not read cache", e)
