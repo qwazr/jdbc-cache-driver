@@ -96,4 +96,4 @@ Community
 Kotlin JDBC-Driver-Cache is open source and is licensed under the Apache 2.0 License.
 
 Report any issue here:
-https://github.com/jhstatewide/jdbc-cache-driver/issues
+https://github.com/jhstatewide/kotlin-jdbc-cache-driver/issues
