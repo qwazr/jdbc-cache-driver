@@ -19,9 +19,9 @@ val githubToken: String? by project
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     archiveClassifier.set("")
 
-    relocate("kotlin", "com.statewidesoftware.kotlin")
-    relocate("org.jetbrains", "com.statewidesoftware.jetbrains")
-    relocate("org.intellij", "com.statewidesoftware.intellij")
+    relocate("kotlin", "io.github.jhstatewide.kotlin")
+    relocate("org.jetbrains", "io.github.jhstatewide.jetbrains")
+    relocate("org.intellij", "io.github.jhstatewide.intellij")
 }
 
 publishing {
@@ -63,7 +63,7 @@ dependencies {
 }
 
 group = "io.github.jhstatewide"
-version = "1.4.5"
+version = "1.4.6"
 description = "JDBC Cache Driver"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 

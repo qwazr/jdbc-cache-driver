@@ -29,7 +29,7 @@ Usage
 <dependency>
   <groupId>io.github.jhstatewide</groupId>
   <artifactId>kotlin-jdbc-cache-driver</artifactId>
-  <version>1.4.5</version>
+  <version>1.4.6</version>
 </dependency>
 ~~~
 
@@ -44,7 +44,7 @@ You can use any compliant JDBC driver.
 
 ```java
 // Initialize the cache driver
-Class.forName("com.statewidesoftware.jdbc.cache.Driver");
+Class.forName("io.github.jhstatewide.jdbc.cache.Driver");
 
 // Provide the URL and the Class name of the backend driver
 Properties info = new Properties();
