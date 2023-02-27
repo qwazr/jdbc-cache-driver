@@ -23,7 +23,7 @@ import java.util.logging.Logger
 
 class Driver : java.sql.Driver {
     private val resultSetCacheMap = ConcurrentHashMap<String, ResultSetCache>()
-    private val logger = Logger.getLogger(Driver::class.java.name).apply { level = Level.ALL }
+    private val logger = Logger.getLogger(Driver::class.java.name)
 
     @Throws(SQLException::class, IllegalArgumentException::class)
     override fun connect(url: String, info: Properties): Connection? {

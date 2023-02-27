@@ -33,7 +33,7 @@ import java.util.logging.Logger
 internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheImpl() {
     private val cacheDirectory: Path
     private val activeKeys: ConcurrentHashMap<String?, ReentrantLock>
-    private val logger = Logger.getLogger(ResultSetOnDiskCacheImpl::class.java.name).apply { level = Level.ALL }
+    private val logger = Logger.getLogger(ResultSetOnDiskCacheImpl::class.java.name)
 
     init {
         logger.fine { "Using disk cache: $cacheDirectory" }
