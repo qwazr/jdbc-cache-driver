@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Consumer
-import java.util.logging.Level
 import java.util.logging.Logger
 
 internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheImpl() {

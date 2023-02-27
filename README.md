@@ -39,7 +39,7 @@ Usage
 <dependency>
   <groupId>io.github.jhstatewide</groupId>
   <artifactId>kotlin-jdbc-cache-driver</artifactId>
-  <version>1.4.6</version>
+  <version>1.4.7</version>
 </dependency>
 ~~~
 
