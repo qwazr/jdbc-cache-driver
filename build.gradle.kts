@@ -63,7 +63,7 @@ dependencies {
 }
 
 group = "io.github.jhstatewide"
-version = "1.4.5-SNAPSHOT"
+version = "1.4.5"
 description = "JDBC Cache Driver"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
