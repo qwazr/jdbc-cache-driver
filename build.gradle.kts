@@ -62,8 +62,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 }
 
-group = "com.statewidesoftware"
-version = "1.4.3"
+group = "io.github.jhstatewide"
+version = "1.4.5-SNAPSHOT"
 description = "JDBC Cache Driver"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 

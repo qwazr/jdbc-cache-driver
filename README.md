@@ -27,9 +27,9 @@ Usage
 
 ~~~strike
 <dependency>
-  <groupId>com.statewidesoftware</groupId>
+  <groupId>io.github.jhstatewide</groupId>
   <artifactId>kotlin-jdbc-cache-driver</artifactId>
-  <version>1.4</version>
+  <version>1.4.5</version>
 </dependency>
 ~~~
 
