@@ -13,7 +13,7 @@ class ExpiringOnDiskCacheTest: OnDiskCacheEnabledJdbcWithDerbyBackendTest() {
         get() = true
 
     override val derbyDbName: String
-        get() = "onDiskCacheEnabled"
+        get() = "ExpiringOnDiskCacheEnabled"
 
     override fun expectedResultSetClass(): Class<out ResultSet?> {
         return CachedOnDiskResultSet::class.java
