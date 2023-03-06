@@ -21,15 +21,12 @@ class ExpiringOnDiskCacheTest: OnDiskCacheEnabledJdbcWithDerbyBackendTest() {
 
     @Test
     fun testCacheExpiry() {
-
-        var numberExpired = 0
-
         val expirationListener = object: ExpirationListener {
+            var numberExpired = 0
             override fun onExpiration(key: String) {
                 numberExpired++
             }
         }
-
 
         ExpirationEventBus.addListener(expirationListener)
 
@@ -44,7 +41,7 @@ class ExpiringOnDiskCacheTest: OnDiskCacheEnabledJdbcWithDerbyBackendTest() {
         resultSet.close()
         statement.close()
         connection.close()
-        Thread.sleep(6000)
+        Thread.sleep(2000)
         val connection2 = getConnection()
         val statement2 = connection2.createStatement()
         val resultSet2 = statement2.executeQuery("SELECT * FROM test")
@@ -54,13 +51,13 @@ class ExpiringOnDiskCacheTest: OnDiskCacheEnabledJdbcWithDerbyBackendTest() {
         resultSet2.close()
         statement2.close()
         connection2.close()
-        assert(numberExpired == 1)
+        assert(expirationListener.numberExpired == 1)
     }
 
     override fun getConnection(): Connection {
         val info = Properties()
-        // set max age to 5 seconds
-        info.setProperty(CACHE_DRIVER_MAX_AGE, "5")
+        // set max age to 1 second
+        info.setProperty(CACHE_DRIVER_MAX_AGE, "1")
         info.setProperty("cache.driver.url", "jdbc:derby:memory:$derbyDbName;create=true")
         return DriverManager.getConnection(orSetJdbcCacheUrl, info)
     }

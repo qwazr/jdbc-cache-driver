@@ -1,7 +1,9 @@
 package io.github.jhstatewide.jdbc.cache
 
+import java.lang.ref.WeakReference
+
 object ExpirationEventBus {
-    private val listeners = mutableSetOf<ExpirationListener>()
+    private val listeners = mutableSetOf<WeakReference<ExpirationListener>>()
 
     private val logger = java.util.logging.Logger.getLogger(ExpirationEventBus::class.java.name)
 
@@ -11,13 +13,13 @@ object ExpirationEventBus {
 
     private fun notifyExpiration(key: String) {
         listeners.forEach { listener ->
-            val listener = listener
+            val listener = listener?.get()
             logger.finer("Notifying listener of expiration for key: $key")
-            listener.onExpiration(key)
+            listener?.onExpiration(key)
         }
     }
 
     fun addListener(listener: ExpirationListener) {
-        listeners.add(listener)
+        listeners.add(WeakReference(listener))
     }
 }
