@@ -24,8 +24,13 @@ import java.io.IOException
 import java.nio.file.Files
 
 abstract class OnDiskCacheJdbcWithDerbyBackendTest : JdbcWithDerbyBackendTest() {
+
+    private fun classSlug(): String {
+        return this.javaClass.simpleName
+    }
+
     public override fun getOrSetJdbcCacheUrl(): String {
-        return "jdbc:cache:file:" + tempDirPath + File.separatorChar + "com/statewidesoftware/jdbc/cache"
+        return "jdbc:cache:file:" + tempDirPath + File.separatorChar + "com/statewidesoftware/jdbc/cache/" + classSlug()
     }
 
     companion object {
