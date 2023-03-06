@@ -29,8 +29,8 @@ import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Consumer
 import java.util.logging.Logger
 
-internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheImpl() {
-    private val cacheDirectory: Path
+internal open class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheImpl() {
+    protected val cacheDirectory: Path
     private val activeKeys: ConcurrentHashMap<String?, ReentrantLock>
     private val logger = Logger.getLogger(ResultSetOnDiskCacheImpl::class.java.name)
 
@@ -64,7 +64,7 @@ internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheIm
         statement: CachedStatement<*>?,
         key: String?,
         resultSetProvider: ResultSetCache.Provider?
-    ): io.github.jhstatewide.jdbc.cache.CachedOnDiskResultSet? {
+    ): CachedOnDiskResultSet? {
         val resultSetPath = cacheDirectory.resolve(key)
         if (!Files.exists(resultSetPath)) {
             if (resultSetProvider == null) throw SQLException("No cache available")
@@ -72,7 +72,7 @@ internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheIm
         }
         return try {
             if (statement == null) return null
-            io.github.jhstatewide.jdbc.cache.CachedOnDiskResultSet(statement, resultSetPath)
+            CachedOnDiskResultSet(statement, resultSetPath)
         } catch (e: IOException) {
             throw SQLException("Can not read cache", e)
         }
@@ -145,7 +145,7 @@ internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheIm
                     }
                 }
             }
-        } catch (e: io.github.jhstatewide.jdbc.cache.CacheException) {
+        } catch (e: CacheException) {
             throw e.sQLException
         } catch (e: IOException) {
             throw of(e).sQLException
@@ -186,5 +186,9 @@ internal class ResultSetOnDiskCacheImpl(cacheDirectory: Path) : ResultSetCacheIm
     @Throws(SQLException::class)
     override fun exists(stmt: Statement?): Boolean {
         return Files.exists(checkCacheDirectory().resolve(checkKey(stmt)))
+    }
+
+    override fun supportsExpiration(): Boolean {
+        return false
     }
 }

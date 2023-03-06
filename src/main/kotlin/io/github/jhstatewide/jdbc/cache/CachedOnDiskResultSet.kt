@@ -19,12 +19,11 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.nio.file.Path
 import java.util.zip.GZIPInputStream
-import kotlin.jvm.Throws
 
 /**
  * Uses disk persistence for caching
  */
-internal class CachedOnDiskResultSet @Throws(IOException::class) constructor(statement: io.github.jhstatewide.jdbc.cache.CachedStatement<*>, resultSetPath: Path) : io.github.jhstatewide.jdbc.cache.CachedResultSet(
+internal class CachedOnDiskResultSet @Throws(IOException::class) constructor(statement: CachedStatement<*>, resultSetPath: Path) : CachedResultSet(
     statement, DataInputStream(
         GZIPInputStream(FileInputStream(resultSetPath.toFile()))
     )

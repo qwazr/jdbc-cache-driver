@@ -24,7 +24,7 @@ import java.sql.Date
 import java.util.*
 
 internal open class CachedPreparedStatement<T : PreparedStatement?> @JvmOverloads constructor(
-    connection: io.github.jhstatewide.jdbc.cache.CachedConnection?, resultSetCache: io.github.jhstatewide.jdbc.cache.ResultSetCache?,
+    connection: io.github.jhstatewide.jdbc.cache.CachedConnection?, resultSetCache: ResultSetCache?,
     backendStatement: T, sql: String?, resultSetConcurrency: Int = 0, resultSetType: Int = 0,
     resultSetHoldability: Int = 0
 ) : io.github.jhstatewide.jdbc.cache.CachedStatement<T>(
@@ -61,7 +61,7 @@ internal open class CachedPreparedStatement<T : PreparedStatement?> @JvmOverload
             this,
             generatedKey,
             if (backendStatement != null) {
-                object : io.github.jhstatewide.jdbc.cache.ResultSetCache.Provider {
+                object : ResultSetCache.Provider {
                     @Throws(SQLException::class)
                     override fun provide(): ResultSet? {
                         return backendStatement.executeQuery()

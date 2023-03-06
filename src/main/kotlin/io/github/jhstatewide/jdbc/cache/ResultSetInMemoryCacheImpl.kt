@@ -105,4 +105,8 @@ internal class ResultSetInMemoryCacheImpl : ResultSetCacheImpl() {
     override fun exists(stmt: Statement?): Boolean {
         return cache.containsKey(checkKey(stmt))
     }
+
+    override fun supportsExpiration(): Boolean {
+        return false
+    }
 }

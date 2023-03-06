@@ -16,6 +16,7 @@ package io.github.jhstatewide.jdbc.cache/*
 
 import java.nio.file.FileSystems
 import java.sql.*
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
@@ -45,18 +46,10 @@ class Driver : java.sql.Driver {
                 info
             )
         if (!active) {
-            return io.github.jhstatewide.jdbc.cache.CachedConnection(backendConnection, null)
+            return CachedConnection(backendConnection, null)
         }
         val resultSetCache: ResultSetCache = if (url.startsWith(URL_FILE_PREFIX)) {
-            if (url.length <= URL_FILE_PREFIX.length) {
-                throw SQLException("The path is empty: $url")
-            }
-            // Check the cache directory
-            val cacheName = url.substring(URL_FILE_PREFIX.length)
-            logger.fine { "Cache directory: $cacheName"}
-            val cacheDirectory = FileSystems.getDefault().getPath(cacheName)
-            logger.fine { "Cache directory: $cacheDirectory"}
-            resultSetCacheMap.computeIfAbsent(cacheName) { ResultSetOnDiskCacheImpl(cacheDirectory) }
+            instantiateDiskCache(url, info)
         } else if (url.startsWith(URL_MEM_PREFIX)) {
             if (url.length <= URL_MEM_PREFIX.length) {
                 throw SQLException("The name is empty: $url")
@@ -67,7 +60,33 @@ class Driver : java.sql.Driver {
         } else {
             throw IllegalArgumentException("Can not find cache implementation for $url")
         }
-        return io.github.jhstatewide.jdbc.cache.CachedConnection(backendConnection, resultSetCache)
+        return CachedConnection(backendConnection, resultSetCache)
+    }
+
+    @Throws(SQLException::class)
+    private fun instantiateDiskCache(url: String, info: Properties): ResultSetCache {
+        if (url.length <= URL_FILE_PREFIX.length) {
+            throw SQLException("The path is empty: $url")
+        }
+        // Check the cache directory
+        val cacheName = url.substring(URL_FILE_PREFIX.length)
+        logger.fine { "Cache directory: $cacheName" }
+        val cacheDirectory = FileSystems.getDefault().getPath(cacheName)
+        logger.fine { "Cache directory: $cacheDirectory" }
+
+        val maxSize: Int? = info.getProperty(CACHE_DRIVER_MAX_SIZE)?.toIntOrNull()
+        val maxAge: Duration? = info.getProperty(CACHE_DRIVER_MAX_AGE)
+            ?.toIntOrNull()
+            ?.let { Duration.ofSeconds(it.toLong()) }
+
+        if (maxSize != null || maxAge != null) {
+            logger.fine { "Max size: $maxSize" }
+            return resultSetCacheMap.computeIfAbsent(cacheName) {
+                ExpiringResultSetCacheImpl(cacheDirectory, maxSize, maxAge)
+            }
+        }
+
+        return resultSetCacheMap.computeIfAbsent(cacheName) { ResultSetOnDiskCacheImpl(cacheDirectory) }
     }
 
     @Throws(SQLException::class)
@@ -107,6 +126,8 @@ class Driver : java.sql.Driver {
         const val CACHE_DRIVER_URL = "cache.driver.url"
         const val CACHE_DRIVER_CLASS = "cache.driver.class"
         const val CACHE_DRIVER_ACTIVE = "cache.driver.active"
+        const val CACHE_DRIVER_MAX_SIZE = "cache.driver.max.size"
+        const val CACHE_DRIVER_MAX_AGE = "cache.driver.max.age"
 
         init {
             try {
@@ -119,7 +140,7 @@ class Driver : java.sql.Driver {
         @JvmStatic
         @Throws(SQLException::class)
         fun getCache(connection: Connection?): ResultSetCache? {
-            if (connection !is io.github.jhstatewide.jdbc.cache.CachedConnection) throw SQLException("The connection is not a cached connection")
+            if (connection !is CachedConnection) throw SQLException("The connection is not a cached connection")
             return connection.resultSetCache
         }
     }

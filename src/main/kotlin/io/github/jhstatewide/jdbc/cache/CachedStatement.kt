@@ -18,8 +18,10 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.sql.*
 
+internal const val JDBC_CACHE_EXTENSION = ".jdbc_cache"
+
 open class CachedStatement<T : Statement?> @JvmOverloads constructor(
-    private val connection: io.github.jhstatewide.jdbc.cache.CachedConnection?, val resultSetCache: ResultSetCache?,
+    private val connection: CachedConnection?, val resultSetCache: ResultSetCache?,
     backendStatement: T, resultSetConcurrency: Int = 0, resultSetType: Int = 0,
     resultSetHoldability: Int = 0
 ) : Statement {
@@ -265,7 +267,7 @@ open class CachedStatement<T : Statement?> @JvmOverloads constructor(
     }
 
     @Throws(SQLException::class)
-    override fun getConnection(): io.github.jhstatewide.jdbc.cache.CachedConnection? {
+    override fun getConnection(): CachedConnection? {
         return connection
     }
 
@@ -368,7 +370,7 @@ open class CachedStatement<T : Statement?> @JvmOverloads constructor(
         fun generateCacheKey(src: String?): String {
             return try {
                 val md = MessageDigest.getInstance("MD5")
-                DatatypeConverter.printHexBinary(md.digest(src!!.toByteArray()))
+                DatatypeConverter.printHexBinary(md.digest(src!!.toByteArray())) + JDBC_CACHE_EXTENSION
             } catch (e: NoSuchAlgorithmException) {
                 throw SQLException("MD5 is not available")
             }

@@ -75,4 +75,6 @@ interface ResultSetCache {
 
     @Throws(SQLException::class)
     operator fun <T> get(statement: CachedStatement<*>?, key: String?, resultSetProvider: Provider?): ResultSet?
+
+    fun supportsExpiration(): Boolean
 }
