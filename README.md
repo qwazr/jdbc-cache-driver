@@ -134,6 +134,39 @@ info.setProperty("cache.driver.active", "false")
 val cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info)
 ```
 
+### Expiration
+
+You can set an expiration time for the cache. The expiration time is the time in seconds before the cache is invalidated.
+The default value is 0, which means no expiration.
+To set it use the property "cache.driver.max.age".
+
+#### Java
+```java
+info.setProperty("cache.driver.max.age", "3600");
+Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
+```
+
+#### Kotlin
+```kotlin
+info.setProperty("cache.driver.max.age", "3600")
+val cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info)
+```
+
+or, choose to expire by maximum number of entries:
+
+#### Java
+```java
+info.setProperty("cache.driver.max.size", "1000");
+Connection cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info);
+```
+
+#### Kotlin
+```kotlin
+info.setProperty("cache.driver.max.size", "1000")
+val cnx = DriverManager.getConnection("jdbc:cache:file:/var/jdbc/cache", info)
+```
+
+
 Community
 ---------
 
