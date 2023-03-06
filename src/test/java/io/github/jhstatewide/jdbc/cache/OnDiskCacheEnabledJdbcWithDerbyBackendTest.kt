@@ -18,16 +18,15 @@
  */
 package io.github.jhstatewide.jdbc.cache
 
-import io.github.jhstatewide.jdbc.cache.CachedOnDiskResultSet
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.*
 
-class OnDiskCacheEnabledJdbcWithDerbyBackendTest : OnDiskCacheJdbcWithDerbyBackendTest() {
-    public override fun expectedResultSetClass(): Class<out ResultSet?> {
-        return io.github.jhstatewide.jdbc.cache.CachedOnDiskResultSet::class.java
+open class OnDiskCacheEnabledJdbcWithDerbyBackendTest : OnDiskCacheJdbcWithDerbyBackendTest() {
+    override fun expectedResultSetClass(): Class<out ResultSet?> {
+        return CachedOnDiskResultSet::class.java
     }
 
     override val isCacheEnabled: Boolean

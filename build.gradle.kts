@@ -60,6 +60,8 @@ dependencies {
     testImplementation("junit:junit:4.12")
     testImplementation("commons-io:commons-io:2.6")
     implementation(kotlin("stdlib-jdk8"))
+    // kotlin coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 }
 
 group = "io.github.jhstatewide"

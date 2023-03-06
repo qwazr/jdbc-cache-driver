@@ -70,6 +70,7 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
                     // if the file is older than the max age, delete it
                     if (Duration.ofMillis(file.lastModified()).plus(_maxAge).isNegative) {
                         file.delete()
+                        ExpirationEventBus.keyExpired(file.name)
                     }
                 }
             // if the cache is larger than the max size, delete the oldest file
@@ -78,7 +79,10 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
                 val oldestFile = jdbcCacheFiles()
                     .minByOrNull { it.lastModified() }
                 // delete the oldest file
-                oldestFile?.delete()
+                oldestFile?.apply { this.delete() }.also {
+                    // notify listeners that the key has expired
+                    it?.name?.let { fileName -> ExpirationEventBus.keyExpired(fileName) }
+                }
             }
         } finally {
             garbageCollectionLock.unlock()
@@ -123,14 +127,37 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
     }
 
     private fun possiblyPurge(key: String?) {
-        // get the creation time of the file
-        val lastModifiedTime = key?.let { this.cacheDirectory.resolve(it).toFile().lastModified() }
-        // determine if the file is older than the max age
-        val isOlderThanMaxAge = lastModifiedTime?.let { Duration.ofMillis(it).plus(_maxAge).isNegative }
 
-        if (isOlderThanMaxAge == true) {
+        if (key == null) {
+            return
+        }
+
+        // ensure the file exists
+        if (!this.cacheDirectory.resolve(key).toFile().exists()) {
+            return
+        }
+
+        // get the creation time of the file
+        val lastModifiedTime = key.let { this.cacheDirectory.resolve(it).toFile().lastModified() }
+        // determine if the file is older than the max age
+        val fileAge = Duration.ofMillis(System.currentTimeMillis() - lastModifiedTime)
+
+        // log the age of the oldest file and the max age
+        logger.finer("Age of the file: ${fileAge.toMillis()}")
+        logger.finer("Max age: ${_maxAge?.toMillis()}")
+
+        val didExpire = if (fileAge != null && _maxAge != null) {
+            fileAge > _maxAge
+        } else {
+            false
+        }
+
+        if (didExpire) {
+            logger.finer("Purging file: $key")
             // delete the file
             this.cacheDirectory.resolve(key).toFile().delete()
+            // notify listeners that the key has expired
+            ExpirationEventBus.keyExpired(key)
         }
     }
 
