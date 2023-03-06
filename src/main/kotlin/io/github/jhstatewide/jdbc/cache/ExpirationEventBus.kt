@@ -12,6 +12,9 @@ object ExpirationEventBus {
     }
 
     private fun notifyExpiration(key: String) {
+        // purge any listeners that have been garbage collected
+        listeners.removeIf { it.get() == null }
+
         listeners.forEach { listener ->
             val listener = listener?.get()
             logger.finer("Notifying listener of expiration for key: $key")
