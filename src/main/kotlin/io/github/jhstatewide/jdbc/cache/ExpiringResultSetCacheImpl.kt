@@ -1,5 +1,6 @@
 package io.github.jhstatewide.jdbc.cache
 
+import io.github.jhstatewide.jdbc.cache.locks.LockCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,8 +18,8 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
     var _maxSize: Int? = null
     var _maxAge: Duration? = null
 
-    val garbageCollectionLock = ReentrantLock()
-    val cacheLock = ReentrantLock()
+    private val garbageCollectionLock = ReentrantLock()
+    private val keyLockCoordinator = LockCoordinator()
 
     constructor(cacheDirectory: Path, maxSize: Int?, maxAge: Duration?) : this(cacheDirectory) {
         this._maxSize = maxSize
@@ -67,22 +68,29 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
             // look at each file in the cache directory
             jdbcCacheFiles()
                 .forEach { file ->
-                    // if the file is older than the max age, delete it
-                    if (Duration.ofMillis(file.lastModified()).plus(_maxAge).isNegative) {
-                        cacheLock.withLock {
+                    keyLockCoordinator.withLock(file.name) {
+                        // if the file is older than the max age, delete it
+                        if (Duration.ofMillis(file.lastModified()).plus(_maxAge).isNegative) {
                             file.delete()
                             ExpirationEventBus.keyExpired(file.name)
                         }
                     }
+
                 }
             // if the cache is larger than the max size, delete the oldest file
             if (isAboveMaxSize()) {
                 // get the oldest file
                 val oldestFile = jdbcCacheFiles()
                     .minByOrNull { it.lastModified() }
+
+                if (oldestFile == null) {
+                    logger.warning("Cache is above max size, but no files were found to delete.")
+                    return
+                }
+
                 // delete the oldest file
-                cacheLock.withLock {
-                    oldestFile?.apply { this.delete() }.also {
+                keyLockCoordinator.withLock(oldestFile.name) {
+                    oldestFile.apply { this.delete() }.also {
                         // notify listeners that the key has expired
                         it?.name?.let { fileName -> ExpirationEventBus.keyExpired(fileName) }
                     }
@@ -116,7 +124,14 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
             logger.warning("Error purging cache file: ${e.localizedMessage}")
         }
 
-        val resultSet = cacheLock.withLock { super.get<T>(statement, key, resultSetProvider) }
+        if (key == null) {
+            return null
+        }
+
+        val resultSet =
+            keyLockCoordinator.withLock<CachedOnDiskResultSet?>(key) {
+                super.get<T>(statement, key, resultSetProvider)
+            }
 
         // if GC is not running, start it
         if (!this.garbageCollectionLock.isLocked) {
@@ -158,9 +173,11 @@ internal class ExpiringResultSetCacheImpl(cacheDirectory: Path) : ExpiringResult
         if (didExpire) {
             logger.finer("Purging file: $key")
             // delete the file
-            this.cacheDirectory.resolve(key).toFile().delete()
-            // notify listeners that the key has expired
-            ExpirationEventBus.keyExpired(key)
+            keyLockCoordinator.withLock(key) {
+                this.cacheDirectory.resolve(key).toFile().delete()
+                // notify listeners that the key has expired
+                ExpirationEventBus.keyExpired(key)
+            }
         }
     }
 

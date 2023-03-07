@@ -32,9 +32,26 @@ class LockCoordinator {
         }
     }
 
+    @Throws(IllegalArgumentException::class)
+    fun <T> withLock(name: String, action: () -> T): T {
+        val entry = locks.compute(name) { _, oldValue ->
+            if (oldValue == null || oldValue.lock.isLocked.not()) {
+                LockEntry(ReentrantLock(), 1)
+            } else {
+                oldValue.count++
+                oldValue
+            }
+        } ?: throw IllegalArgumentException("Lock not found: $name")
 
-
-
+        val result = entry.lock.withLock(action)
+        synchronized(entry) {
+            entry.count--
+            if (entry.count == 0) {
+                locks.remove(name, entry)
+            }
+        }
+        return result
+    }
 
     @Throws(IllegalArgumentException::class)
     fun withLock(name: String, action: () -> Unit) {
